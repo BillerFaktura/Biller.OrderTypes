@@ -10,85 +10,74 @@ using MigraDoc.Rendering;
 using System.Diagnostics;
 using MigraDoc.Rendering.Printing;
 using MigraDoc.DocumentObjectModel.IO;
+using NLog;
 
 namespace OrderTypes_Biller.Export
 {
     public class OrderPdfExport : Biller.Data.Interfaces.IExport
     {
-        Biller.UI.ViewModel.MainWindowViewModel ParentViewModel;
-        public OrderPdfExport(Biller.UI.ViewModel.MainWindowViewModel ParentViewModel)
+        private static Logger logger = LogManager.GetCurrentClassLogger();
+
+        Biller.UI.ViewModel.MainWindowViewModel MainWindowViewModel;
+        Settings.ViewModel ParentViewModel;
+        public OrderPdfExport(Biller.UI.ViewModel.MainWindowViewModel MainWindowViewModel, Settings.ViewModel parentViewModel)
         {
-            this.ParentViewModel = ParentViewModel;
+            ParentViewModel = parentViewModel;
+            this.MainWindowViewModel = MainWindowViewModel;
             PreviewElement = new MigraDoc.Rendering.Windows.DocumentPreview();
             PrintDialog = new System.Windows.Forms.PrintDialog();
         }
-
-        /// <summary>
-        /// The MigraDoc document that represents the invoice.
-        /// </summary>
-        MigraDoc.DocumentObjectModel.Document document;
-
-        /// <summary>
-        /// The text frame of the MigraDoc document that contains the address.
-        /// </summary>
-        TextFrame addressFrame;
-
-        /// <summary>
-        /// The table of the MigraDoc document that contains the invoice items.
-        /// </summary>
-        Table table;
 
         MigraDoc.Rendering.Windows.DocumentPreview PreviewElement;
 
         System.Windows.Forms.PrintDialog PrintDialog;
 
         /// <summary>
-        /// Defines the styles used to format the MigraDoc document.
+        /// Creates the dynamic parts of the invoice.
         /// </summary>
-        void DefineStyles()
+        async Task<MigraDoc.DocumentObjectModel.Document> FillContent(Order.Order order)
         {
+            Table table;
+            MigraDoc.DocumentObjectModel.Document document = new MigraDoc.DocumentObjectModel.Document();
+
             // Get the predefined style Normal.
-            Style style = this.document.Styles["Normal"];
+            Style style = document.Styles["Normal"];
             // Because all styles are derived from Normal, the next line changes the 
             // font of the whole document. Or, more exactly, it changes the font of
             // all styles and paragraphs that do not redefine the font.
             style.Font.Name = "Calibri";
 
-            style = this.document.Styles[StyleNames.Header];
+            style = document.Styles[StyleNames.Header];
             style.ParagraphFormat.AddTabStop("16cm", TabAlignment.Right);
 
-            style = this.document.Styles[StyleNames.Footer];
+            style = document.Styles[StyleNames.Footer];
             style.ParagraphFormat.AddTabStop("8cm", TabAlignment.Center);
 
             // Create a new style called Table based on style Normal
-            style = this.document.Styles.AddStyle("Table", "Normal");
+            style = document.Styles.AddStyle("Table", "Normal");
             style.Font.Name = "Calibri";
             style.Font.Size = 9;
 
             // Create a new style called Reference based on style Normal
-            style = this.document.Styles.AddStyle("Reference", "Normal");
+            style = document.Styles.AddStyle("Reference", "Normal");
             style.ParagraphFormat.SpaceBefore = "5mm";
             style.ParagraphFormat.SpaceAfter = "5mm";
             style.ParagraphFormat.TabStops.AddTabStop("16cm", TabAlignment.Right);
-        }
+            style.Font.Size = 16;
 
-        /// <summary>
-        /// Creates the static parts of the invoice.
-        /// </summary>
-        async void CreatePage(Order.Order order)
-        {
+            var cm = ParentViewModel.SettingsController.cmUnit;
             // Each MigraDoc document needs at least one section.
-            Section section = this.document.AddSection();
+            Section section = document.AddSection();
 
             // Create footer
-            var mycryptominerfooter = section.Footers.Primary.AddTable();
-            mycryptominerfooter.Style = "Table";
-            mycryptominerfooter.Borders.Color = Color.Empty;
-            mycryptominerfooter.Borders.Visible = false;
-            mycryptominerfooter.Rows.LeftIndent = 0;
-            mycryptominerfooter.LeftPadding = "-1cm";
+            var footer = section.Footers.Primary.AddTable();
+            footer.Style = "Table";
+            footer.Borders.Color = Color.Empty;
+            footer.Borders.Visible = false;
+            footer.Rows.LeftIndent = 0;
+            footer.LeftPadding = "-1cm";
 
-            Column footercolumn = mycryptominerfooter.AddColumn("4.75cm");
+            // Column footercolumn = footer.AddColumn("4.75cm");
             //footercolumn.Borders.Visible = false;
             //footercolumn.Format.Alignment = ParagraphAlignment.Left;
             //footercolumn = mycryptominerfooter.AddColumn("4.5cm");
@@ -101,34 +90,45 @@ namespace OrderTypes_Biller.Export
             //footercolumn.Borders.Visible = false;
             //footercolumn.Format.Alignment = ParagraphAlignment.Left;
 
-            Row footerrow = mycryptominerfooter.AddRow();
+            //Row footerrow = footer.AddRow();
             //footerrow.Cells[0].AddParagraph("");
             //footerrow.Cells[1].AddParagraph("");
             //footerrow.Cells[2].AddParagraph("");
             //footerrow.Cells[3].AddParagraph("");
 
             // Create the text frame for the address
-            this.addressFrame = section.AddTextFrame();
-            this.addressFrame.Height = "3.0cm";
-            this.addressFrame.Width = "7.0cm";
-            this.addressFrame.Left = ShapePosition.Left;
-            this.addressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
-            this.addressFrame.Top = "5.0cm";
-            this.addressFrame.RelativeVertical = RelativeVertical.Page;
+            TextFrame addressFrame;
+            addressFrame = section.AddTextFrame();
+            addressFrame.Height = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameHeight);
+            addressFrame.Width = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameWidth);
+            addressFrame.Left = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameLeft);
+            addressFrame.Top = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameTop);
+            addressFrame.RelativeVertical = RelativeVertical.Page;
+            addressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
 
             // Put sender in address frame
-            var address = (await ParentViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
-            
-            Paragraph paragraph = this.addressFrame.AddParagraph(address.MainAddress.OneLineString);
-            paragraph.Format.Font.Name = "Calibri";
-            paragraph.Format.Font.Size = 8;
-            paragraph.Format.SpaceAfter = 3;
+            var address = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
+
+
+            Paragraph paragraph;
+            if (ParentViewModel.SettingsController.AddressFrameShowSender)
+            {
+                paragraph = addressFrame.AddParagraph(address.MainAddress.OneLineString);
+                paragraph.Format.Font.Size = 8;
+                // paragraph.Format.SpaceAfter = "3 cm";
+            }
+            paragraph = addressFrame.AddParagraph();
+            foreach (var line in order.Customer.MainAddress.AddressStrings)
+            {
+                paragraph.AddText(line);
+                paragraph.AddLineBreak();
+            }
 
             // Datum
             paragraph = section.AddParagraph();
-            paragraph.Format.SpaceBefore = "4cm";
+            paragraph.Format.SpaceBefore = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoTop);
             paragraph.Format.Alignment = ParagraphAlignment.Right;
-            paragraph.Format.RightIndent = "-0.5cm";
+            paragraph.Format.RightIndent = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoRight);
             paragraph.AddText("Rechnungsdatum:");
             paragraph.AddTab();
             paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
@@ -151,92 +151,95 @@ namespace OrderTypes_Biller.Export
             }
 
             // Create the item table
-            this.table = section.AddTable();
-            this.table.Style = "Table";
-            this.table.Borders.Color = TableBorder;
-            this.table.Borders.Width = 0.25;
-            this.table.Borders.Left.Width = 0.5;
-            this.table.Borders.Right.Width = 0.5;
-            this.table.Rows.LeftIndent = 0;
+            table = section.AddTable();
+            table.Style = "Table";
+            table.Borders.Color = TableBorder;
+            table.Borders.Width = 0.25;
+            table.Borders.Left.Width = 0.5;
+            table.Borders.Right.Width = 0.5;
+            table.Rows.LeftIndent = 0;
 
             // Before you can add a row, you must define the columns
-            Column column = this.table.AddColumn("1cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
+            //Column column = table.AddColumn("1cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("1.75cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("2cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("6.5cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("2cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("1.5cm");
+            //column.Format.Alignment = ParagraphAlignment.Center;
+            //column = table.AddColumn("2cm");
+            //column.Format.Alignment = ParagraphAlignment.Right;
+            Column column;
+            foreach(var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
+            {
+                column = table.AddColumn(cm.ValueToString(ArticleColumn.ColumnWidth));
+                column.Format.Alignment = ArticleColumn.Alignment;
+            }
 
-            column = this.table.AddColumn("1.75cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
-
-            column = this.table.AddColumn("2cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
-
-            column = this.table.AddColumn("6.5cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
-
-            column = this.table.AddColumn("2cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
-
-            column = this.table.AddColumn("1.5cm");
-            column.Format.Alignment = ParagraphAlignment.Center;
-
-            column = this.table.AddColumn("2cm");
-            column.Format.Alignment = ParagraphAlignment.Right;
 
             // Create the header of the table
             Row row = table.AddRow();
             row.HeadingFormat = true;
-            row.Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[0].AddParagraph("Pos");
-            row.Cells[0].Format.Font.Bold = false;
-            row.Cells[0].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[1].AddParagraph("Menge");
-            row.Cells[1].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[2].AddParagraph("Art.-Nr.");
-            row.Cells[2].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[3].AddParagraph("Text");
-            row.Cells[3].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[4].AddParagraph("Einzelpreis");
-            row.Cells[4].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[5].AddParagraph("Ust.");
-            row.Cells[5].Format.Alignment = ParagraphAlignment.Center;
-            row.Cells[6].AddParagraph("Gesamtpreis");
-            row.Cells[6].Format.Alignment = ParagraphAlignment.Right;
             row.Format.SpaceBefore = "0,1cm";
             row.Format.SpaceAfter = "0,25cm";
-            //this.table.SetEdge(0, 0, 6, 1, Edge.Box, BorderStyle.Single, 0.75, Color.Empty);
-        }
-
-        /// <summary>
-        /// Creates the dynamic parts of the invoice.
-        /// </summary>
-        void FillContent(Order.Order order)
-        {
-            Paragraph paragraph = this.addressFrame.AddParagraph();
-            foreach (var line in order.Customer.MainAddress.AddressStrings)
+            //row.Format.Alignment = ParagraphAlignment.Center;
+            var index = 0;
+            foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
-                paragraph.AddText(line);
-                paragraph.AddLineBreak();
+                row.Cells[index].AddParagraph(ArticleColumn.Header);
+                index += 1;
             }
+            //row.Cells[0].AddParagraph("Pos");
+            //row.Cells[0].Format.Font.Bold = false;
+            //row.Cells[0].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[1].AddParagraph("Menge");
+            //row.Cells[1].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[2].AddParagraph("Art.-Nr.");
+            //row.Cells[2].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[3].AddParagraph("Text");
+            //row.Cells[3].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[4].AddParagraph("Einzelpreis");
+            //row.Cells[4].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[5].AddParagraph("Ust.");
+            //row.Cells[5].Format.Alignment = ParagraphAlignment.Center;
+            //row.Cells[6].AddParagraph("Gesamtpreis");
+            //row.Cells[6].Format.Alignment = ParagraphAlignment.Right;
 
+            logger.Trace("FillContent - AddArticle " + order.DocumentType + ":" + order.DocumentID);
+            
             foreach (var article in order.OrderedArticles)
             {
-                // Each item fills two rows
-                Row row1 = this.table.AddRow();
+                logger.Trace("AddArticle - " + article.ArticleID);
 
-                row1.Cells[0].AddParagraph(article.OrderPosition.ToString());
-                row1.Cells[1].AddParagraph(article.OrderedAmountString);
-                row1.Cells[2].AddParagraph(article.ArticleID);
-                paragraph = row1.Cells[3].AddParagraph();
-                paragraph.AddText(article.ArticleDescription);
-                paragraph.AddLineBreak();
-                paragraph.AddText(article.ArticleText);
-                row1.Cells[4].AddParagraph(article.OrderPrice.Price1.ToString());
-                row1.Cells[5].AddParagraph(new Biller.Data.Utils.Percentage() { Amount = article.TaxClass.TaxRate.Amount }.PercentageString);
-                row1.Cells[6].AddParagraph(article.RoundedGrossOrderValue.AmountString);
+                Row row1 = table.AddRow();
+                index = 0;
+                foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
+                {
+                    row1.Cells[index].AddParagraph(ReplaceArticlePlaceHolder(ArticleColumn.Content, article));
+                    index += 1;
+                }
+
+                //row1.Cells[0].AddParagraph(article.OrderPosition.ToString());
+                //row1.Cells[1].AddParagraph(article.OrderedAmountString);
+                //row1.Cells[2].AddParagraph(article.ArticleID);
+                //paragraph = row1.Cells[3].AddParagraph();
+                //paragraph.AddText(article.ArticleDescription);
+                //paragraph.AddLineBreak();
+                //paragraph.AddText(article.ArticleText);
+                //row1.Cells[4].AddParagraph(article.OrderPrice.Price1.ToString());
+                //row1.Cells[5].AddParagraph(new Biller.Data.Utils.Percentage() { Amount = article.TaxClass.TaxRate.Amount }.PercentageString);
+                //row1.Cells[6].AddParagraph(article.RoundedGrossOrderValue.AmountString);
                 row1.Format.SpaceBefore = "0,1cm";
                 row1.Format.SpaceAfter = "0,4cm";
                 //this.table.SetEdge(0, this.table.Rows.Count - 2, 6, 2, Edge.Box, BorderStyle.Single, 0.75);
             }
 
+            logger.Trace("Setting Borders");
             Border BlackBorder = new Border();
             BlackBorder.Visible = true;
             BlackBorder.Color = Colors.Black;
@@ -250,92 +253,106 @@ namespace OrderTypes_Biller.Export
             Border NoBorder = new Border();
             NoBorder.Visible = false;
 
+            logger.Trace("Adding subtotal net");
+            var lastcolumn = ParentViewModel.SettingsController.ArticleListColumns.Count - 1;
             // Add the total price row
-            Row row = this.table.AddRow();
+            row = table.AddRow();
             row.Cells[0].AddParagraph("Zwischensumme Netto");
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-            row.Cells[0].MergeRight = 5;
-            row.Cells[6].AddParagraph(order.OrderCalculation.NetArticleSummary.AmountString);
+            row.Cells[0].MergeRight = lastcolumn-1;
+            row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetArticleSummary.AmountString);
             row.Format.SpaceBefore = "0,1cm";
             row.Cells[0].Borders.Bottom = NoBorder.Clone();
-            row.Cells[6].Borders.Bottom = NoBorder.Clone();
+            row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
             row.Cells[0].Borders.Top = NoBorder.Clone();
-            row.Cells[6].Borders.Top = NoBorder.Clone();
+            row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
 
             if (order.OrderCalculation.OrderRebate.Amount > 0)
             {
-                row = this.table.AddRow();
-                row.Cells[0].AddParagraph("Abzgl. " + order.OrderRebate.PercentageString + " Gesamtrabatt" );
+                logger.Trace("Adding OrderRebate");
+                row = table.AddRow();
+                row.Cells[0].AddParagraph("Abzgl. " + order.OrderRebate.PercentageString + " Gesamtrabatt");
                 row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = 5;
-                row.Cells[6].AddParagraph(order.OrderCalculation.NetOrderRebate.AmountString);
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderRebate.AmountString);
                 row.Format.SpaceBefore = "0,1cm";
                 row.Cells[0].Borders.Bottom = NoBorder.Clone();
-                row.Cells[6].Borders.Bottom = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
                 row.Cells[0].Borders.Top = NoBorder.Clone();
-                row.Cells[6].Borders.Top = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
             }
 
             if (!String.IsNullOrEmpty(order.OrderShipment.Name))
             {
-                row = this.table.AddRow();
+                logger.Trace("Adding Shipment");
+                row = table.AddRow();
                 row.Cells[0].AddParagraph("Zzgl. " + order.OrderShipment.Name);
                 row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = 5;
-                row.Cells[6].AddParagraph(order.OrderCalculation.NetShipment.AmountString);
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetShipment.AmountString);
                 row.Format.SpaceBefore = "0,1cm";
                 row.Cells[0].Borders.Bottom = BlackBorder.Clone();
-                row.Cells[6].Borders.Bottom = BlackBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = BlackBorder.Clone();
                 row.Cells[0].Borders.Top = NoBorder.Clone();
-                row.Cells[6].Borders.Top = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
             }
 
             if (order.OrderCalculation.OrderRebate.Amount > 0 || !String.IsNullOrEmpty(order.OrderShipment.Name))
             {
-                row = this.table.AddRow();
+                logger.Trace("Adding Subtotal");
+                row = table.AddRow();
                 row.Cells[0].AddParagraph("Zwischensumme Netto");
                 row.Cells[0].Format.Font.Bold = true;
                 row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = 5;
-                row.Cells[6].AddParagraph(order.OrderCalculation.NetOrderSummary.AmountString);
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderSummary.AmountString);
                 row.Format.SpaceBefore = "0,1cm";
                 row.Cells[0].Borders.Bottom = NoBorder.Clone();
-                row.Cells[6].Borders.Bottom = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
                 row.Cells[0].Borders.Top = BlackBorder.Clone();
-                row.Cells[6].Borders.Top = BlackBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = BlackBorder.Clone();
             }
 
             // Add the VAT row
             foreach (var tax in order.OrderCalculation.TaxValues)
             {
-                row = this.table.AddRow();
-                row.Cells[0].AddParagraph("Zzgl. " + tax.TaxClass.Name + " "+ tax.TaxClassAddition);
+                logger.Trace("Adding Tax - " + tax.TaxClass.Name);
+                row = table.AddRow();
+                row.Cells[0].AddParagraph("Zzgl. " + tax.TaxClass.Name + " " + tax.TaxClassAddition);
                 row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = 5;
-                row.Cells[6].AddParagraph(tax.Value.AmountString);
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(tax.Value.AmountString);
                 row.Cells[0].Borders.Bottom = NoBorder.Clone();
-                row.Cells[6].Borders.Bottom = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
                 row.Cells[0].Borders.Top = NoBorder.Clone();
-                row.Cells[6].Borders.Top = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
             }
 
-            row = this.table.AddRow();
+            logger.Trace("Adding subtotal gross");
+            row = table.AddRow();
             row.Cells[0].Borders.Bottom = BlackThickBorder.Clone();
             row.Cells[0].AddParagraph("Gesamtbetrag");
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-            row.Cells[0].MergeRight = 5;
-            row.Cells[6].AddParagraph(order.OrderCalculation.OrderSummary.AmountString);
-            row.Cells[6].Borders.Bottom = BlackThickBorder.Clone();
+            row.Cells[0].MergeRight = lastcolumn - 1;
+            row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.OrderSummary.AmountString);
+            row.Cells[lastcolumn].Borders.Bottom = BlackThickBorder.Clone();
             row.Format.SpaceBefore = "0,25cm";
             row.Format.SpaceAfter = "0,05cm";
 
             // Add the notes paragraph
-            paragraph = this.document.LastSection.AddParagraph();
+            paragraph = document.LastSection.AddParagraph();
             paragraph.Format.SpaceBefore = "1cm";
             paragraph.AddText(order.OrderClosingText);
+
+            return document;
         }
+
+        //private MigraDoc.DocumentObjectModel.Document fillContent(Order.Order order)
+        //{
+
+        //}
 
         readonly static Color TableBorder = new Color(0, 0, 0);
         readonly static Color TableBlue = new Color(235, 240, 249);
@@ -357,17 +374,7 @@ namespace OrderTypes_Biller.Export
 
         private async Task<MigraDoc.DocumentObjectModel.Document> GetDocument(Order.Order order)
         {
-            // Create a new MigraDoc document
-            this.document = new MigraDoc.DocumentObjectModel.Document();
-            this.document.Info.Author = "Biller V2";
-
-            DefineStyles();
-
-            await Task.Run(() => CreatePage(order));
-
-            FillContent(order);
-
-            return this.document;
+            return await FillContent(order);
         }
 
         public async void SaveDocument(Biller.Data.Document.Document document, string filename, bool OpenOnSuccess = true)
@@ -417,6 +424,35 @@ namespace OrderTypes_Biller.Export
             */
 
             SaveDocument(document, document.DocumentType + document.DocumentID + ".pdf");
+        }
+
+        private string ReplaceArticlePlaceHolder(string placeholder, Biller.Data.Articles.OrderedArticle article)
+        {
+            if (placeholder == "{Position}")
+                return article.OrderPosition.ToString();
+            if (placeholder == "{Amount}")
+                return article.OrderedAmountString;
+            if (placeholder == "{ArticleID}")
+                return article.ArticleID;
+            if (placeholder == "{ArticleID}")
+                return article.ArticleID;
+            if (placeholder == "{ArticleName}")
+                return article.ArticleDescription;
+            if (placeholder == "{ArticleText}")
+                return article.ArticleText;
+            if (placeholder == "{SinglePriceGross}")
+                return article.OrderPrice.Price1.ToString();
+            if (placeholder == "{SinglePriceNet}")
+                return article.OrderPrice.Price2.ToString();
+            if (placeholder == "{TaxRate}")
+                return article.TaxClass.TaxRate.PercentageString;
+            if (placeholder == "{OrderedValueGross}")
+                return article.RoundedGrossOrderValue.ToString();
+            if (placeholder == "{OrderedValueNet}")
+                return article.RoundedNetOrderValue.ToString();
+            if (placeholder == "{Rebate}")
+                return article.OrderRebate.ToString();
+            return placeholder;
         }
 
         public List<string> AvailableDocumentTypes()

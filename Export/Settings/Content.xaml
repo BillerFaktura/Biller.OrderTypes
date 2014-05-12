@@ -18,6 +18,39 @@
             <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="1.5*" MinWidth="200"/>
         </Grid.ColumnDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid Name="GridSpan1"/>
+            <Grid Name="GridSpan2" Grid.ColumnSpan="2"/>
+            <Grid Name="GridSpan3" Grid.ColumnSpan="3"/>
+            <Grid Name="GridSpan4" Grid.ColumnSpan="4"/>
+            <Grid Name="GridSpan5" Grid.ColumnSpan="5"/>
+            <Grid Name="GridSpan6" Grid.ColumnSpan="6"/>
+            <Grid Name="GridSpan7" Grid.ColumnSpan="7"/>
+
+            <Grid Name="GridSpan1Margin" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan2Margin" Grid.ColumnSpan="2" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan3Margin" Grid.ColumnSpan="3" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan4Margin" Grid.ColumnSpan="4" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan5Margin" Grid.ColumnSpan="5" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan6Margin" Grid.ColumnSpan="6" Margin="0,0,1,0"/>
+            <Grid Name="GridSpan7Margin" Grid.ColumnSpan="7" Margin="0,0,1,0"/>
+        </Grid>
+        
         <!--controls:AnimatedScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <Button Content="Add Text" Click="Button_Click"/>
@@ -66,6 +99,36 @@
             </StackPanel>
         </StackPanel>-->
         
-        
+        <StackPanel>
+            <controls:WatermarkTextBox Watermark="AddressFrameHeight" Text="{Binding SettingsController.AddressFrameHeight}"/>
+            <controls:WatermarkTextBox Watermark="AddressFrameWidth" Text="{Binding SettingsController.AddressFrameWidth}"/>
+            <controls:WatermarkTextBox Watermark="AddressFrameTop" Text="{Binding SettingsController.AddressFrameTop}"/>
+            <controls:WatermarkTextBox Watermark="AddressFrameLeft" Text="{Binding SettingsController.AddressFrameLeft}"/>
+            <controls:WatermarkTextBox Watermark="OrderInfoTop" Text="{Binding SettingsController.OrderInfoTop}"/>
+            <controls:WatermarkTextBox Watermark="OrderInfoRight" Text="{Binding SettingsController.OrderInfoRight}"/>
+            <ItemsControl Height="200" ItemsSource="{Binding SettingsController.ArticleListColumns}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus">
+                            <TextBox Text="{Binding Header}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                            <ComboBox SelectedItem="{Binding Content}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.AllowedArticleDataFields}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                            <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}">
+                                <ComboBoxItem Content="Links"/>
+                                <ComboBoxItem Content="Zentriert"/>
+                                <ComboBoxItem Content="Rechts"/>
+                            </ComboBox>
+                            <TextBox Text="{Binding ColumnWidth}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Orientation="Horizontal">
+                <Button Content="Add" Click="Button_Click_1" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                <Button Content="Up" Click="Button_Click_4" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                <Button Content="Down" Click="Button_Click_3" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+                <Button Content="Delete" Click="Button_Click_2" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
+            </StackPanel>
+            
+        </StackPanel>
     </Grid>
 </UserControl>

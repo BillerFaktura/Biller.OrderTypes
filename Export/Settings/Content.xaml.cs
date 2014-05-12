@@ -38,5 +38,46 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             viewModel.SelectedElement = sender as Settings.Controls.IExportControl;
         }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.SettingsController.ArticleListColumns.Add(new Models.ArticleListColumnModel());
+        }
+
+        private void StackPanel_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.SelectedArticleListColumn = (sender as StackPanel).DataContext as Models.ArticleListColumnModel;
+        }
+
+        private void Button_Click_2(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.SettingsController.ArticleListColumns.Remove(viewModel.SelectedArticleListColumn);
+        }
+
+        /// <summary>
+        /// Move Item down / Raise the index
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Button_Click_3(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            this.Focus();
+            var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
+            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
+            viewModel.SettingsController.ArticleListColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.ArticleListColumns.Count), viewModel.SelectedArticleListColumn);
+        }
+
+        private void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            this.Focus();
+            var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
+            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
+            viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
+        }
     }
 }
