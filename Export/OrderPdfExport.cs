@@ -11,6 +11,7 @@ using System.Diagnostics;
 using MigraDoc.Rendering.Printing;
 using MigraDoc.DocumentObjectModel.IO;
 using NLog;
+using Biller.Data.Models;
 
 namespace OrderTypes_Biller.Export
 {
@@ -39,6 +40,7 @@ namespace OrderTypes_Biller.Export
         {
             Table table;
             MigraDoc.DocumentObjectModel.Document document = new MigraDoc.DocumentObjectModel.Document();
+            var pageSetup = document.DefaultPageSetup.Clone();
 
             // Get the predefined style Normal.
             Style style = document.Styles["Normal"];
@@ -75,14 +77,16 @@ namespace OrderTypes_Biller.Export
             footer.Borders.Color = Color.Empty;
             footer.Borders.Visible = false;
             footer.Rows.LeftIndent = 0;
-            footer.LeftPadding = "-1cm";
+            footer.LeftPadding = "0cm";
 
-            // Column footercolumn = footer.AddColumn("4.75cm");
-            //footercolumn.Borders.Visible = false;
-            //footercolumn.Format.Alignment = ParagraphAlignment.Left;
-            //footercolumn = mycryptominerfooter.AddColumn("4.5cm");
-            //footercolumn.Borders.Visible = false;
-            //footercolumn.Format.Alignment = ParagraphAlignment.Left;
+
+            Paragraph paragraph;
+            Column footercolumn = footer.AddColumn("4cm");
+            footercolumn.Borders.Visible = false;
+            footercolumn.Format.Alignment = ParagraphAlignment.Left;
+            footercolumn = footer.AddColumn("4.5cm");
+            footercolumn.Borders.Visible = false;
+            footercolumn.Format.Alignment = ParagraphAlignment.Left;
             //footercolumn = mycryptominerfooter.AddColumn("4.0cm");
             //footercolumn.Borders.Visible = false;
             //footercolumn.Format.Alignment = ParagraphAlignment.Left;
@@ -90,8 +94,16 @@ namespace OrderTypes_Biller.Export
             //footercolumn.Borders.Visible = false;
             //footercolumn.Format.Alignment = ParagraphAlignment.Left;
 
-            //Row footerrow = footer.AddRow();
-            //footerrow.Cells[0].AddParagraph("");
+            Row footerrow = footer.AddRow();
+            String addressString = "";
+            // Put sender in address frame
+            var address = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
+
+            foreach (var line in address.MainAddress.AddressStrings)
+                addressString += line + "\n";
+            footerrow.Cells[0].AddParagraph(addressString);
+            footerrow.Cells[1].AddParagraph("Steuernummer: " + address.TaxID);
+            footerrow.Cells[1].AddParagraph("USt-Id: " + address.SalesTaxID);
             //footerrow.Cells[1].AddParagraph("");
             //footerrow.Cells[2].AddParagraph("");
             //footerrow.Cells[3].AddParagraph("");
@@ -106,11 +118,6 @@ namespace OrderTypes_Biller.Export
             addressFrame.RelativeVertical = RelativeVertical.Page;
             addressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
 
-            // Put sender in address frame
-            var address = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
-
-
-            Paragraph paragraph;
             if (ParentViewModel.SettingsController.AddressFrameShowSender)
             {
                 paragraph = addressFrame.AddParagraph(address.MainAddress.OneLineString);
@@ -124,23 +131,41 @@ namespace OrderTypes_Biller.Export
                 paragraph.AddLineBreak();
             }
 
-            // Datum
-            paragraph = section.AddParagraph();
-            paragraph.Format.SpaceBefore = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoTop);
-            paragraph.Format.Alignment = ParagraphAlignment.Right;
-            paragraph.Format.RightIndent = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoRight);
-            paragraph.AddText("Rechnungsdatum:");
-            paragraph.AddTab();
-            paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
-            paragraph.AddLineBreak();
-            paragraph.AddText("Leistungsdatum:");
-            paragraph.AddTab();
-            paragraph.AddTab();
-            paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
+            // Orderinformation
+            Column column;
+            Row row;
+            table = section.AddTable();
+            table.Style = "Table";
+            table.Rows.Alignment = RowAlignment.Right;
+            column = table.AddColumn("3cm");
+            column.Format.Alignment = ParagraphAlignment.Left;
+            column = table.AddColumn("3cm");
+            column.Format.Alignment = ParagraphAlignment.Right;
+            row = table.AddRow();
+            row.Format.SpaceBefore = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoTop);
+            row.Cells[0].AddParagraph("Rechnungsdatum:");
+            row.Cells[1].AddParagraph(order.Date.ToString("dd.MM.yyyy"));
+            row = table.AddRow();
+            row.Cells[0].AddParagraph("Leistungsdatum:");
+            row.Cells[1].AddParagraph(order.DateOfDelivery.ToString("dd.MM.yyyy"));
+            if (ParentViewModel.SettingsController.OrderInfoShowCustomerID)
+            {
+                row = table.AddRow();
+                row.Cells[0].AddParagraph("Kundennummer:");
+                row.Cells[1].AddParagraph(order.Customer.CustomerID);
+            }
 
+            //paragraph.AddText("Rechnungsdatum:");
+            //paragraph.AddTab();
+            //paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
+            //paragraph.AddLineBreak();
+            //paragraph.AddText("Leistungsdatum:");
+            //paragraph.AddTab();
+            //paragraph.AddTab();
+            //paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
 
             paragraph = section.AddParagraph();
-            paragraph.Format.SpaceBefore = "2cm";
+            paragraph.Format.SpaceBefore = "1cm";
             paragraph.Style = "Reference";
             paragraph.AddFormattedText(order.LocalizedDocumentType + " Nr. " + order.DocumentID, TextFormat.Bold);
 
@@ -150,7 +175,7 @@ namespace OrderTypes_Biller.Export
                 paragraph.Format.SpaceAfter = "0.75cm";
             }
 
-            // Create the item table
+            // Create the article table
             table = section.AddTable();
             table.Style = "Table";
             table.Borders.Color = TableBorder;
@@ -174,7 +199,7 @@ namespace OrderTypes_Biller.Export
             //column.Format.Alignment = ParagraphAlignment.Center;
             //column = table.AddColumn("2cm");
             //column.Format.Alignment = ParagraphAlignment.Right;
-            Column column;
+            
             foreach(var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
                 column = table.AddColumn(cm.ValueToString(ArticleColumn.ColumnWidth));
@@ -183,7 +208,7 @@ namespace OrderTypes_Biller.Export
 
 
             // Create the header of the table
-            Row row = table.AddRow();
+            row = table.AddRow();
             row.HeadingFormat = true;
             row.Format.SpaceBefore = "0,1cm";
             row.Format.SpaceAfter = "0,25cm";
@@ -257,6 +282,7 @@ namespace OrderTypes_Biller.Export
             var lastcolumn = ParentViewModel.SettingsController.ArticleListColumns.Count - 1;
             // Add the total price row
             row = table.AddRow();
+            row.Format.PageBreakBefore = true;
             row.Cells[0].AddParagraph("Zwischensumme Netto");
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
@@ -451,7 +477,7 @@ namespace OrderTypes_Biller.Export
             if (placeholder == "{OrderedValueNet}")
                 return article.RoundedNetOrderValue.ToString();
             if (placeholder == "{Rebate}")
-                return article.OrderRebate.ToString();
+                return article.OrderRebate.PercentageString;
             return placeholder;
         }
 
@@ -476,6 +502,5 @@ namespace OrderTypes_Biller.Export
         {
             get { return "bfeeab8f-c7fc-4560-8278-85de2a413d40"; }
         }
-
     }
 }

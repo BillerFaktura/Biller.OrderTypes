@@ -31,19 +31,26 @@ namespace OrderTypes_Biller
             get { return 0.1; }
         }
 
-        public async void Activate()
+        public void Activate()
         {
-            await ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
-            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Docket.DocketFactory());
+            //await Task.Run(() =>
+            //{
+            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
+            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
+            //    ParentViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
+            //});
+            
 
-            await ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
-            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Invoice.InvoiceFactory());
+            var vm = new Export.Settings.ViewModel(this);
+            //vm.LoadData();
 
-            var vm = new Export.Settings.ViewModel();
+            internalViewModels.Add(vm);
 
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
 
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
+
+            
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()

@@ -79,5 +79,12 @@ namespace OrderTypes_Biller.Export.Settings
             viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
             viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
         }
+
+        private void StackPanel_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            this.Focus();
+            viewModel.SaveSettings();
+        }
     }
 }

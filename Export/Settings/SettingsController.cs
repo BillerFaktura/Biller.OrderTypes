@@ -5,10 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Biller.Data.Utils;
 using System.Collections.ObjectModel;
+using System.Xml.Linq;
+using Newtonsoft.Json;
 
 namespace OrderTypes_Biller.Export.Settings
 {
-    public class SettingsController : Biller.Data.Utils.PropertyChangedHelper
+    public class SettingsController : Biller.Data.Utils.PropertyChangedHelper, Biller.Data.Interfaces.IXMLStorageable
     {
         public Biller.Data.Utils.Unit cmUnit { get; private set; }
 
@@ -42,5 +44,48 @@ namespace OrderTypes_Biller.Export.Settings
         #region ArticleList
         public ObservableCollection<Models.ArticleListColumnModel> ArticleListColumns { get { return GetValue(() => ArticleListColumns); } set { SetValue(value); } }
         #endregion
+
+        public XElement GetXElement()
+        {
+            string json = JsonConvert.SerializeObject(this);
+            return new XElement(XElementName, new XElement(IDFieldName, ID), new XElement("Content", json));
+        }
+
+        public void ParseFromXElement(System.Xml.Linq.XElement source)
+        {
+            if (source.Name != XElementName)
+                throw new Exception("Expected " + XElementName + " but got " + source.Name);
+
+            var settings = JsonConvert.DeserializeObject<SettingsController>(source.Element("Content").Value);
+            AddressFrameHeight = settings.AddressFrameHeight;
+            AddressFrameWidth = settings.AddressFrameWidth;
+            AddressFrameTop = settings.AddressFrameTop;
+            AddressFrameLeft = settings.AddressFrameLeft;
+            AddressFrameShowSender = settings.AddressFrameShowSender;
+            OrderInfoTop = settings.OrderInfoTop;
+            OrderInfoRight = settings.OrderInfoRight;
+            OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
+            ArticleListColumns = settings.ArticleListColumns;
+        }
+
+        public string XElementName
+        {
+            get { return "ExportLayoutSetting"; }
+        }
+
+        public string ID
+        {
+            get { return "1"; }
+        }
+
+        public string IDFieldName
+        {
+            get { return "ID"; }
+        }
+
+        public Biller.Data.Interfaces.IXMLStorageable GetNewInstance()
+        {
+            return new SettingsController();
+        }
     }
 }

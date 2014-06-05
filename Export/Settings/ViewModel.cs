@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace OrderTypes_Biller.Export.Settings
 {
-    public class ViewModel : Biller.Data.Utils.PropertyChangedHelper
+    public class ViewModel : Biller.Data.Utils.PropertyChangedHelper, Biller.UI.Interface.IViewModel
     {
         static List<string> allowedDataFields = new List<string>(new[] { "{CustomerAddressWithLineBreak}", "{CustomerAddressOneLine}", "{CustomerName}", "{SenderAddressWithLineBreak}",
         "{SenderAddressOneLine}", "{LocalizedDocumentType}", "{DocumentID}", "{DocumentType}", "{DocumentDate}", "{DateOfDelivery}", "{PaymentMethodeName}", "{PaymentMethodeText}",
@@ -17,10 +20,20 @@ namespace OrderTypes_Biller.Export.Settings
         static List<string> allowedArticleDataFields = new List<string>(new[] { "{Position}", "{Amount}", "{ArticleID}", "{ArticleText}", "{ArticleName}",
         "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}"});
 
-        public ViewModel()
+        string DataLocation = (Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), "") + "Data\\";
+
+        public ViewModel(EntryPoint EntryPoint)
         {
+            mainWindowViewModel = EntryPoint.ParentViewModel;
             Elements = new ObservableCollection<Controls.IExportControl>();
             SettingsController = new SettingsController();
+        }
+
+        private Biller.UI.ViewModel.MainWindowViewModel mainWindowViewModel;
+
+        void SettingsController_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            SaveSettings();
         }
 
         public ObservableCollection<Controls.IExportControl> Elements { get { return GetValue(() => Elements); } private set { SetValue(value); } }
@@ -31,5 +44,34 @@ namespace OrderTypes_Biller.Export.Settings
         public List<string> AllowedArticleDataFields { get { return ViewModel.allowedArticleDataFields; } }
 
         public Models.ArticleListColumnModel SelectedArticleListColumn { get { return GetValue(() => SelectedArticleListColumn); } set { SetValue(value); } }
+
+        public async void SaveSettings()
+        {
+            //string json = JsonConvert.SerializeObject(SettingsController);
+            //File.WriteAllText(DataLocation + "layout.json", json, Encoding.UTF8);
+            await mainWindowViewModel.Database.SaveOrUpdateStorageableItem(SettingsController);
+        }
+
+        public async Task LoadData()
+        {
+            await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
+            mainWindowViewModel.DocumentTabViewModel.AddDocumentFactory(new Docket.DocketFactory());
+
+            await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
+            mainWindowViewModel.DocumentTabViewModel.AddDocumentFactory(new Invoice.InvoiceFactory());
+
+            await mainWindowViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
+
+            var savedItem = (await mainWindowViewModel.Database.AllStorageableItems(new Export.Settings.SettingsController())).FirstOrDefault();
+            if (savedItem != null)
+                SettingsController = savedItem as Export.Settings.SettingsController;
+
+            SettingsController.PropertyChanged += SettingsController_PropertyChanged;
+        }
+
+        public void ReceiveData(object data)
+        {
+            //
+        }
     }
 }
