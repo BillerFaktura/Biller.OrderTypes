@@ -45,16 +45,29 @@ namespace OrderTypes_Biller.Export.Settings
             viewModel.SettingsController.ArticleListColumns.Add(new Models.ArticleListColumnModel());
         }
 
-        private void StackPanel_GotFocus(object sender, RoutedEventArgs e)
-        {
-            var viewModel = (DataContext as Export.Settings.ViewModel);
-            viewModel.SelectedArticleListColumn = (sender as StackPanel).DataContext as Models.ArticleListColumnModel;
-        }
-
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
             var viewModel = (DataContext as Export.Settings.ViewModel);
             viewModel.SettingsController.ArticleListColumns.Remove(viewModel.SelectedArticleListColumn);
+        }
+
+        private void StackPanel_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.SelectedArticleListColumn = (sender as StackPanel).DataContext as Models.ArticleListColumnModel;
+
+            var sp = (StackPanel)sender;
+            sp.Background = (SolidColorBrush)new BrushConverter().ConvertFromString("#DDD");
+        }
+
+        private void StackPanel_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            this.Focus();
+            viewModel.SaveSettings();
+            
+            var sp = (StackPanel)sender;
+            sp.Background = System.Windows.Media.Brushes.Transparent;
         }
 
         /// <summary>
@@ -80,11 +93,6 @@ namespace OrderTypes_Biller.Export.Settings
             viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
         }
 
-        private void StackPanel_LostFocus(object sender, RoutedEventArgs e)
-        {
-            var viewModel = (DataContext as Export.Settings.ViewModel);
-            this.Focus();
-            viewModel.SaveSettings();
-        }
+        
     }
 }

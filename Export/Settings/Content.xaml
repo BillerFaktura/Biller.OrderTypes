@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:Biller.Controls;assembly=Biller.Controls"
+             xmlns:converter="clr-namespace:Biller.Data.Converters;assembly=Biller.Data"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700" Margin="12">
     <UserControl.Resources>
@@ -22,6 +23,7 @@
                 <Setter Property="FontSize" Value="13"/>
                 <Setter Property="Margin" Value="1"/>
             </Style>
+            <converter:cmConverter x:Key="cmConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -116,19 +118,19 @@
                     <StackPanel Margin="0,5,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Höhe" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="AddressFrameHeight" Text="{Binding SettingsController.AddressFrameHeight}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="AddressFrameHeight" Text="{Binding SettingsController.AddressFrameHeight, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Breite" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="AddressFrameWidth" Text="{Binding SettingsController.AddressFrameWidth}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="AddressFrameWidth" Text="{Binding SettingsController.AddressFrameWidth, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Abstand zum Seitenanfang" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="AddressFrameTop" Text="{Binding SettingsController.AddressFrameTop}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="AddressFrameTop" Text="{Binding SettingsController.AddressFrameTop, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" >
                             <TextBlock Text="Abstand zum linken Seitenrand" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="AddressFrameLeft" Text="{Binding SettingsController.AddressFrameLeft}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="AddressFrameLeft" Text="{Binding SettingsController.AddressFrameLeft, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <CheckBox Content="Absender anzeigen" FontSize="13" IsChecked="{Binding SettingsController.AddressFrameShowSender}"/>
                     </StackPanel>
@@ -137,41 +139,52 @@
                     <StackPanel Margin="0,5,0,0">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Abstand zum Seitenanfang" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="OrderInfoTop" Text="{Binding SettingsController.OrderInfoTop}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="OrderInfoTop" Text="{Binding SettingsController.OrderInfoTop, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Abstand rechten Seitenrand" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                            <controls:WatermarkTextBox Watermark="OrderInfoRight" Text="{Binding SettingsController.OrderInfoRight}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+                            <controls:WatermarkTextBox Watermark="OrderInfoRight" Text="{Binding SettingsController.OrderInfoRight, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>
                         <CheckBox Content="Kundennummer anzeigen" FontSize="13" IsChecked="{Binding SettingsController.OrderInfoShowCustomerID}"/>
                     </StackPanel>
                 </GroupBox>
 
                 <GroupBox Header="Artikelspalten" FontSize="15">
-                    <StackPanel Margin="0,5,0,0">
-                        <ItemsControl Height="200" ItemsSource="{Binding SettingsController.ArticleListColumns}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">
-                                        <TextBox Text="{Binding Header}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
-                                        <ComboBox SelectedItem="{Binding Content}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.AllowedArticleDataFields}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
-                                        <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}">
-                                            <ComboBoxItem Content="Links"/>
-                                            <ComboBoxItem Content="Zentriert"/>
-                                            <ComboBoxItem Content="Rechts"/>
-                                        </ComboBox>
-                                        <TextBox Text="{Binding ColumnWidth}" Width="{Binding ElementName=GridSpan3Margin, Path=ActualWidth}"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <StackPanel Orientation="Horizontal">
-                            <Button Content="Add" Click="Button_Click_1" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}"/>
-                            <Button Content="Up" Click="Button_Click_4" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}"/>
-                            <Button Content="Down" Click="Button_Click_3" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}"/>
-                            <Button Content="Delete" Click="Button_Click_2" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" MaxWidth="100"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,5,0,0">
+                            <ItemsControl Height="200" ItemsSource="{Binding SettingsController.ArticleListColumns}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">
+                                            <TextBox Text="{Binding Header}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
+                                            <ComboBox SelectedItem="{Binding Content}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.AllowedArticleDataFields}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
+                                            <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
+                                                <ComboBoxItem Content="Links"/>
+                                                <ComboBoxItem Content="Zentriert"/>
+                                                <ComboBoxItem Content="Rechts"/>
+                                            </ComboBox>
+                                            <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
-                    </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,5,0,0">
+                            <controls:Office2013Button Content="Nach oben" Click="Button_Click_4" FontSize="12"/>
+                            <controls:Office2013Button Content="Nach unten" Click="Button_Click_3" FontSize="12"/>
+
+                            <controls:Office2013Button Content="Hinzufügen" Click="Button_Click_1" FontSize="12"/>
+                            <controls:Office2013Button Content="Entfernen" Click="Button_Click_2" FontSize="12"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="Fußzeile" FontSize="15">
+                    
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>
