@@ -466,6 +466,8 @@ namespace OrderTypes_Biller.Export
                 return article.ArticleDescription;
             if (placeholder == "{ArticleText}")
                 return article.ArticleText;
+            if (placeholder == "{ArticleNameWithText}")
+                return article.ArticleDescription + "\n" + article.OrderText;
             if (placeholder == "{SinglePriceGross}")
                 return article.OrderPrice.Price1.ToString();
             if (placeholder == "{SinglePriceNet}")

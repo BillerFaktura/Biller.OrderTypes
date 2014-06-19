@@ -25,6 +25,13 @@ namespace OrderTypes_Biller.Export.Settings
             OrderInfoTop = 4;
             OrderInfoRight = -0.5;
             ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Pos", AlignmentIndex = 0, Content = "{Position}", ColumnWidth = 1 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Art.-Nr.", AlignmentIndex = 0, Content = "{ArticleID}", ColumnWidth = 1.7 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Menge", AlignmentIndex = 0, Content = "{Amount}", ColumnWidth = 1.5 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Artikel", AlignmentIndex = 0, Content = "{ArticleNameWithText}", ColumnWidth = 6 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Einzelpreis", AlignmentIndex = 0, Content = "{SinglePriceGross}", ColumnWidth = 2 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Steuersatz", AlignmentIndex = 0, Content = "{TaxRate}", ColumnWidth = 1.7 });
+            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Gesamt Brutto", AlignmentIndex = 2, Content = "{OrderedValueGross}", ColumnWidth = 2 });
         }
 
         #region AddressFrame
@@ -65,6 +72,7 @@ namespace OrderTypes_Biller.Export.Settings
             OrderInfoTop = settings.OrderInfoTop;
             OrderInfoRight = settings.OrderInfoRight;
             OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
+            ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
             ArticleListColumns = settings.ArticleListColumns;
         }
 

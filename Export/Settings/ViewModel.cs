@@ -17,7 +17,7 @@ namespace OrderTypes_Biller.Export.Settings
         "{SenderAddressOneLine}", "{LocalizedDocumentType}", "{DocumentID}", "{DocumentType}", "{DocumentDate}", "{DateOfDelivery}", "{PaymentMethodeName}", "{PaymentMethodeText}",
         "{DocumentOpeningText}", "{DocumentClosingText}"});
 
-        static List<string> allowedArticleDataFields = new List<string>(new[] { "{Position}", "{Amount}", "{ArticleID}", "{ArticleText}", "{ArticleName}",
+        static List<string> allowedArticleDataFields = new List<string>(new[] { "{Position}", "{Amount}", "{ArticleID}", "{ArticleText}", "{ArticleName}", "{ArticleNameWithText}",
         "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}"});
 
         string DataLocation = (Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), "") + "Data\\";
