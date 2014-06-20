@@ -7,15 +7,13 @@ using System.Threading.Tasks;
 
 namespace OrderTypes_Biller.Models
 {
-    public class ArticleListColumnModel
+    public class FooterColumnModel
     {
-        public string Header { get; set; }
-
-        public string Content { get; set; }
-
         public ParagraphAlignment Alignment { get; set; }
 
-        public int AlignmentIndex { get { return (int)Alignment; }
+        public int AlignmentIndex
+        {
+            get { return (int)Alignment; }
             set
             {
                 if (value == 0)
@@ -28,5 +26,7 @@ namespace OrderTypes_Biller.Models
         }
 
         public double ColumnWidth { get; set; }
+
+        public string Value { get; set; }
     }
 }

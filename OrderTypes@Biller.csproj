@@ -125,6 +125,7 @@
     <Compile Include="Invoice\InvoiceFactory.cs" />
     <Compile Include="Invoice\InvoiceParser.cs" />
     <Compile Include="Models\ArticleListColumnModel.cs" />
+    <Compile Include="Models\FooterColumnModel.cs" />
     <Compile Include="Order\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

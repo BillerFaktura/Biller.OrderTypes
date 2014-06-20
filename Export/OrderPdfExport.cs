@@ -81,32 +81,24 @@ namespace OrderTypes_Biller.Export
 
 
             Paragraph paragraph;
-            Column footercolumn = footer.AddColumn("4cm");
-            footercolumn.Borders.Visible = false;
-            footercolumn.Format.Alignment = ParagraphAlignment.Left;
-            footercolumn = footer.AddColumn("4.5cm");
-            footercolumn.Borders.Visible = false;
-            footercolumn.Format.Alignment = ParagraphAlignment.Left;
-            //footercolumn = mycryptominerfooter.AddColumn("4.0cm");
-            //footercolumn.Borders.Visible = false;
-            //footercolumn.Format.Alignment = ParagraphAlignment.Left;
-            //footercolumn = mycryptominerfooter.AddColumn("5.75cm");
-            //footercolumn.Borders.Visible = false;
-            //footercolumn.Format.Alignment = ParagraphAlignment.Left;
+            foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
+            {
+                var fcolumn = footer.AddColumn(cm.ValueToString(footercolumn.ColumnWidth));
+                fcolumn.Borders.Visible = false;
+                fcolumn.Format.Alignment = footercolumn.Alignment;
+            }
 
             Row footerrow = footer.AddRow();
             String addressString = "";
-            // Put sender in address frame
-            var address = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
-
-            foreach (var line in address.MainAddress.AddressStrings)
-                addressString += line + "\n";
-            footerrow.Cells[0].AddParagraph(addressString);
-            footerrow.Cells[1].AddParagraph("Steuernummer: " + address.TaxID);
-            footerrow.Cells[1].AddParagraph("USt-Id: " + address.SalesTaxID);
-            //footerrow.Cells[1].AddParagraph("");
-            //footerrow.Cells[2].AddParagraph("");
-            //footerrow.Cells[3].AddParagraph("");
+            var companySettings = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
+            
+            var index = 0;
+            foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
+            {
+                var content = ReplaceFooterPlaceHolder(footercolumn.Value, companySettings);
+                footerrow.Cells[0].AddParagraph(content);
+                index += 1;
+            }
 
             // Create the text frame for the address
             TextFrame addressFrame;
@@ -120,7 +112,7 @@ namespace OrderTypes_Biller.Export
 
             if (ParentViewModel.SettingsController.AddressFrameShowSender)
             {
-                paragraph = addressFrame.AddParagraph(address.MainAddress.OneLineString);
+                paragraph = addressFrame.AddParagraph(companySettings.MainAddress.OneLineString);
                 paragraph.Format.Font.Size = 8;
                 // paragraph.Format.SpaceAfter = "3 cm";
             }
@@ -155,20 +147,13 @@ namespace OrderTypes_Biller.Export
                 row.Cells[1].AddParagraph(order.Customer.CustomerID);
             }
 
-            //paragraph.AddText("Rechnungsdatum:");
-            //paragraph.AddTab();
-            //paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
-            //paragraph.AddLineBreak();
-            //paragraph.AddText("Leistungsdatum:");
-            //paragraph.AddTab();
-            //paragraph.AddTab();
-            //paragraph.AddText(order.Date.ToString("dd.MM.yyyy"));
-
+            // Order ID
             paragraph = section.AddParagraph();
             paragraph.Format.SpaceBefore = "1cm";
             paragraph.Style = "Reference";
             paragraph.AddFormattedText(order.LocalizedDocumentType + " Nr. " + order.DocumentID, TextFormat.Bold);
 
+            // Order opening text
             if (!String.IsNullOrEmpty(order.OrderOpeningText))
             {
                 paragraph = section.AddParagraph(order.OrderOpeningText);
@@ -183,57 +168,26 @@ namespace OrderTypes_Biller.Export
             table.Borders.Left.Width = 0.5;
             table.Borders.Right.Width = 0.5;
             table.Rows.LeftIndent = 0;
-
-            // Before you can add a row, you must define the columns
-            //Column column = table.AddColumn("1cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("1.75cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("2cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("6.5cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("2cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("1.5cm");
-            //column.Format.Alignment = ParagraphAlignment.Center;
-            //column = table.AddColumn("2cm");
-            //column.Format.Alignment = ParagraphAlignment.Right;
             
+            // Article list columns
             foreach(var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
                 column = table.AddColumn(cm.ValueToString(ArticleColumn.ColumnWidth));
                 column.Format.Alignment = ArticleColumn.Alignment;
             }
 
-
             // Create the header of the table
             row = table.AddRow();
             row.HeadingFormat = true;
             row.Format.SpaceBefore = "0,1cm";
             row.Format.SpaceAfter = "0,25cm";
-            //row.Format.Alignment = ParagraphAlignment.Center;
-            var index = 0;
+            
+            index = 0;
             foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
                 row.Cells[index].AddParagraph(ArticleColumn.Header);
                 index += 1;
             }
-            //row.Cells[0].AddParagraph("Pos");
-            //row.Cells[0].Format.Font.Bold = false;
-            //row.Cells[0].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[1].AddParagraph("Menge");
-            //row.Cells[1].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[2].AddParagraph("Art.-Nr.");
-            //row.Cells[2].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[3].AddParagraph("Text");
-            //row.Cells[3].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[4].AddParagraph("Einzelpreis");
-            //row.Cells[4].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[5].AddParagraph("Ust.");
-            //row.Cells[5].Format.Alignment = ParagraphAlignment.Center;
-            //row.Cells[6].AddParagraph("Gesamtpreis");
-            //row.Cells[6].Format.Alignment = ParagraphAlignment.Right;
 
             logger.Trace("FillContent - AddArticle " + order.DocumentType + ":" + order.DocumentID);
             
@@ -249,19 +203,8 @@ namespace OrderTypes_Biller.Export
                     index += 1;
                 }
 
-                //row1.Cells[0].AddParagraph(article.OrderPosition.ToString());
-                //row1.Cells[1].AddParagraph(article.OrderedAmountString);
-                //row1.Cells[2].AddParagraph(article.ArticleID);
-                //paragraph = row1.Cells[3].AddParagraph();
-                //paragraph.AddText(article.ArticleDescription);
-                //paragraph.AddLineBreak();
-                //paragraph.AddText(article.ArticleText);
-                //row1.Cells[4].AddParagraph(article.OrderPrice.Price1.ToString());
-                //row1.Cells[5].AddParagraph(new Biller.Data.Utils.Percentage() { Amount = article.TaxClass.TaxRate.Amount }.PercentageString);
-                //row1.Cells[6].AddParagraph(article.RoundedGrossOrderValue.AmountString);
                 row1.Format.SpaceBefore = "0,1cm";
                 row1.Format.SpaceAfter = "0,4cm";
-                //this.table.SetEdge(0, this.table.Rows.Count - 2, 6, 2, Edge.Box, BorderStyle.Single, 0.75);
             }
 
             logger.Trace("Setting Borders");
@@ -375,11 +318,6 @@ namespace OrderTypes_Biller.Export
             return document;
         }
 
-        //private MigraDoc.DocumentObjectModel.Document fillContent(Order.Order order)
-        //{
-
-        //}
-
         readonly static Color TableBorder = new Color(0, 0, 0);
         readonly static Color TableBlue = new Color(235, 240, 249);
         readonly static Color TableGray = new Color(242, 242, 242);
@@ -393,9 +331,7 @@ namespace OrderTypes_Biller.Export
         public async void RenderDocumentPreview(Biller.Data.Document.Document document)
         {
             if (document is Order.Order)
-            {
                 PreviewElement.Ddl = DdlWriter.WriteToString(await GetDocument(document as Order.Order));
-            }
         }
 
         private async Task<MigraDoc.DocumentObjectModel.Document> GetDocument(Order.Order order)
@@ -480,6 +416,21 @@ namespace OrderTypes_Biller.Export
                 return article.RoundedNetOrderValue.ToString();
             if (placeholder == "{Rebate}")
                 return article.OrderRebate.PercentageString;
+            return placeholder;
+        }
+
+        private string ReplaceFooterPlaceHolder(string placeholder, Biller.Data.Models.CompanySettings companySettings)
+        {
+            if (placeholder.Contains("{CompanyAddress}"))
+            {
+                var address = "";
+                foreach (var line in companySettings.MainAddress.AddressStrings)
+                    address += line + "\n";
+                placeholder = placeholder.Replace("{CompanyAddress}", address);
+            }
+            placeholder = placeholder.Replace("{TaxID}", companySettings.TaxID);
+            placeholder = placeholder.Replace("{SalesTaxID}", companySettings.SalesTaxID);
+                
             return placeholder;
         }
 

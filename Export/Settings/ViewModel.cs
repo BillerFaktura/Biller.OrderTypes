@@ -45,10 +45,10 @@ namespace OrderTypes_Biller.Export.Settings
 
         public Models.ArticleListColumnModel SelectedArticleListColumn { get { return GetValue(() => SelectedArticleListColumn); } set { SetValue(value); } }
 
+        public Models.FooterColumnModel SelectedFooterColumn { get { return GetValue(() => SelectedFooterColumn); } set { SetValue(value); } }
+
         public async void SaveSettings()
         {
-            //string json = JsonConvert.SerializeObject(SettingsController);
-            //File.WriteAllText(DataLocation + "layout.json", json, Encoding.UTF8);
             await mainWindowViewModel.Database.SaveOrUpdateStorageableItem(SettingsController);
         }
 

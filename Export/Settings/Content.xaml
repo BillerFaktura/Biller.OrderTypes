@@ -156,7 +156,7 @@
                             <ColumnDefinition Width="*" MaxWidth="100"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Margin="0,5,0,0">
-                            <ItemsControl Height="200" ItemsSource="{Binding SettingsController.ArticleListColumns}">
+                            <ItemsControl ItemsSource="{Binding SettingsController.ArticleListColumns}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">
@@ -184,7 +184,36 @@
                 </GroupBox>
 
                 <GroupBox Header="Fußzeile" FontSize="15">
-                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" MaxWidth="100"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Margin="0,5,0,0">
+                            <ItemsControl ItemsSource="{Binding SettingsController.FooterColumns}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" GotFocus="SP_FooterColumns_GotFocus" LostFocus="SP_FooterColumns_LostFocus">
+                                            <TextBox Text="{Binding Value}" Width="{Binding ElementName=GridSpan4Margin, Path=ActualWidth}" Margin="1" FontSize="13" AcceptsReturn="True"/>
+                                            <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
+                                                <ComboBoxItem Content="Links"/>
+                                                <ComboBoxItem Content="Zentriert"/>
+                                                <ComboBoxItem Content="Rechts"/>
+                                            </ComboBox>
+                                            <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Margin="0,5,0,0">
+                            <controls:Office2013Button Content="Nach oben" Click="ButtonMoveFooterColumnUp" FontSize="12"/>
+                            <controls:Office2013Button Content="Nach unten" Click="ButtonMoveFooterColumnDown" FontSize="12"/>
+
+                            <controls:Office2013Button Content="Spalte hinzufügen" Click="ButtonAddFooterColumn" FontSize="12"/>
+                            <controls:Office2013Button Content="Spalte entfernen" Click="ButtonRemoveFooterColumn" FontSize="12"/>
+                        </StackPanel>
+                    </Grid>
                 </GroupBox>
             </StackPanel>
         </ScrollViewer>

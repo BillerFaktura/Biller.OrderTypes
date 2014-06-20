@@ -19,19 +19,13 @@ namespace OrderTypes_Biller.Export.Settings
             cmUnit = new Unit() { DecimalDigits = 3, DecimalSeperator = ".", Name = "Centimeter", ShortName = "cm", ThousandSeperator = "" };
             AddressFrameHeight = 3;
             AddressFrameWidth = 7;
-            AddressFrameLeft = 2;
+            AddressFrameLeft = 0;
             AddressFrameTop = 5;
             AddressFrameShowSender = true;
             OrderInfoTop = 4;
             OrderInfoRight = -0.5;
             ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Pos", AlignmentIndex = 0, Content = "{Position}", ColumnWidth = 1 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Art.-Nr.", AlignmentIndex = 0, Content = "{ArticleID}", ColumnWidth = 1.7 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Menge", AlignmentIndex = 0, Content = "{Amount}", ColumnWidth = 1.5 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Artikel", AlignmentIndex = 0, Content = "{ArticleNameWithText}", ColumnWidth = 6 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Einzelpreis", AlignmentIndex = 0, Content = "{SinglePriceGross}", ColumnWidth = 2 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Steuersatz", AlignmentIndex = 0, Content = "{TaxRate}", ColumnWidth = 1.7 });
-            ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Gesamt Brutto", AlignmentIndex = 2, Content = "{OrderedValueGross}", ColumnWidth = 2 });
+            FooterColumns = new ObservableCollection<Models.FooterColumnModel>();
         }
 
         #region AddressFrame
@@ -52,6 +46,10 @@ namespace OrderTypes_Biller.Export.Settings
         public ObservableCollection<Models.ArticleListColumnModel> ArticleListColumns { get { return GetValue(() => ArticleListColumns); } set { SetValue(value); } }
         #endregion
 
+        #region Footer
+        public ObservableCollection<Models.FooterColumnModel> FooterColumns { get { return GetValue(() => FooterColumns); } set { SetValue(value); } }
+        #endregion
+
         public XElement GetXElement()
         {
             string json = JsonConvert.SerializeObject(this);
@@ -63,7 +61,8 @@ namespace OrderTypes_Biller.Export.Settings
             if (source.Name != XElementName)
                 throw new Exception("Expected " + XElementName + " but got " + source.Name);
 
-            var settings = JsonConvert.DeserializeObject<SettingsController>(source.Element("Content").Value);
+            string json = source.Element("Content").Value;
+            var settings = JsonConvert.DeserializeObject<SettingsController>(json);
             AddressFrameHeight = settings.AddressFrameHeight;
             AddressFrameWidth = settings.AddressFrameWidth;
             AddressFrameTop = settings.AddressFrameTop;
@@ -72,8 +71,24 @@ namespace OrderTypes_Biller.Export.Settings
             OrderInfoTop = settings.OrderInfoTop;
             OrderInfoRight = settings.OrderInfoRight;
             OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
-            ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
-            ArticleListColumns = settings.ArticleListColumns;
+            if (settings.ArticleListColumns != null)
+                ArticleListColumns = settings.ArticleListColumns;
+            else
+            {
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Pos", AlignmentIndex = 0, Content = "{Position}", ColumnWidth = 1 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Art.-Nr.", AlignmentIndex = 0, Content = "{ArticleID}", ColumnWidth = 1.7 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Menge", AlignmentIndex = 0, Content = "{Amount}", ColumnWidth = 1.5 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Artikel", AlignmentIndex = 0, Content = "{ArticleNameWithText}", ColumnWidth = 6 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Einzelpreis", AlignmentIndex = 0, Content = "{SinglePriceGross}", ColumnWidth = 2 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Steuersatz", AlignmentIndex = 0, Content = "{TaxRate}", ColumnWidth = 1.7 });
+                ArticleListColumns.Add(new Models.ArticleListColumnModel() { Header = "Gesamt Brutto", AlignmentIndex = 2, Content = "{OrderedValueGross}", ColumnWidth = 2 });
+            }
+            if (settings.FooterColumns != null)
+                FooterColumns = settings.FooterColumns;
+            else
+            {
+
+            }
         }
 
         public string XElementName
