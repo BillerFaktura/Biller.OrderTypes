@@ -117,6 +117,14 @@
                 <GroupBox Header="Adresse" FontSize="15">
                     <StackPanel Margin="0,5,0,0">
                         <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Bildpfad" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                            <controls:WatermarkTextBox Watermark="Doppelt klicken zum Ändern" Text="{Binding SettingsController.RelativeImagePath}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13" MouseDoubleClick="WatermarkTextBox_MouseDoubleClick"/>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Adresse" FontSize="15">
+                    <StackPanel Margin="0,5,0,0">
+                        <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Höhe" Style="{StaticResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
                             <controls:WatermarkTextBox Watermark="AddressFrameHeight" Text="{Binding SettingsController.AddressFrameHeight, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
                         </StackPanel>

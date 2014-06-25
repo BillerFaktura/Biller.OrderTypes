@@ -7,6 +7,8 @@ using Biller.Data.Utils;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using Newtonsoft.Json;
+using System.IO;
+using System.Reflection;
 
 namespace OrderTypes_Biller.Export.Settings
 {
@@ -50,6 +52,10 @@ namespace OrderTypes_Biller.Export.Settings
         public ObservableCollection<Models.FooterColumnModel> FooterColumns { get { return GetValue(() => FooterColumns); } set { SetValue(value); } }
         #endregion
 
+        #region Header
+        public string RelativeImagePath { get { return GetValue(() => RelativeImagePath); } set { SetValue(MakeRelativePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value)); } }
+        #endregion
+
         public XElement GetXElement()
         {
             string json = JsonConvert.SerializeObject(this);
@@ -71,6 +77,7 @@ namespace OrderTypes_Biller.Export.Settings
             OrderInfoTop = settings.OrderInfoTop;
             OrderInfoRight = settings.OrderInfoRight;
             OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
+            RelativeImagePath = settings.RelativeImagePath;
             if (settings.ArticleListColumns != null)
                 ArticleListColumns = settings.ArticleListColumns;
             else
@@ -89,6 +96,7 @@ namespace OrderTypes_Biller.Export.Settings
             {
 
             }
+            
         }
 
         public string XElementName
@@ -109,6 +117,38 @@ namespace OrderTypes_Biller.Export.Settings
         public Biller.Data.Interfaces.IXMLStorageable GetNewInstance()
         {
             return new SettingsController();
+        }
+
+        /// <summary>
+        /// Creates a relative path from one file or folder to another.
+        /// </summary>
+        /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
+        /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
+        /// <returns>The relative path from the start directory to the end path.</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="UriFormatException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static String MakeRelativePath(String fromPath, String toPath)
+        {
+            if (toPath.StartsWith("..\\"))
+                return toPath;
+            if (String.IsNullOrEmpty(fromPath)) throw new ArgumentNullException("fromPath");
+            if (String.IsNullOrEmpty(toPath)) throw new ArgumentNullException("toPath");
+
+            Uri fromUri = new Uri(fromPath);
+            Uri toUri = new Uri(toPath);
+
+            if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
+
+            Uri relativeUri = fromUri.MakeRelativeUri(toUri);
+            String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            if (toUri.Scheme.ToUpperInvariant() == "FILE")
+            {
+                relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+            }
+
+            return relativePath;
         }
     }
 }

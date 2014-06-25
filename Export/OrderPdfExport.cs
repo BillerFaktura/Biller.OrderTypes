@@ -12,6 +12,7 @@ using MigraDoc.Rendering.Printing;
 using MigraDoc.DocumentObjectModel.IO;
 using NLog;
 using Biller.Data.Models;
+using System.Text.RegularExpressions;
 
 namespace OrderTypes_Biller.Export
 {
@@ -38,10 +39,30 @@ namespace OrderTypes_Biller.Export
         /// </summary>
         async Task<MigraDoc.DocumentObjectModel.Document> FillContent(Order.Order order)
         {
-            Table table;
             MigraDoc.DocumentObjectModel.Document document = new MigraDoc.DocumentObjectModel.Document();
             var pageSetup = document.DefaultPageSetup.Clone();
+            pageSetup.TopMargin = Unit.FromCentimeter(11);
+            pageSetup.BottomMargin = Unit.FromCentimeter(4);
 
+            var companySettings = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
+
+            PrepareStyles(document);
+
+            // Each MigraDoc document needs at least one section.
+            Section section = document.AddSection();
+            section.PageSetup = pageSetup;
+
+            CreateHeader(section, companySettings, order);
+            CreateFooter(section, companySettings);
+            CreatePreListContent(section, order);
+            CreateArticleList(section, order);
+            CreatePostListContent(section, order);
+
+            return document;
+        }
+
+        private void PrepareStyles(MigraDoc.DocumentObjectModel.Document document)
+        {
             // Get the predefined style Normal.
             Style style = document.Styles["Normal"];
             // Because all styles are derived from Normal, the next line changes the 
@@ -66,11 +87,10 @@ namespace OrderTypes_Biller.Export
             style.ParagraphFormat.SpaceAfter = "5mm";
             style.ParagraphFormat.TabStops.AddTabStop("16cm", TabAlignment.Right);
             style.Font.Size = 16;
+        }
 
-            var cm = ParentViewModel.SettingsController.cmUnit;
-            // Each MigraDoc document needs at least one section.
-            Section section = document.AddSection();
-
+        private void CreateFooter(Section section, Biller.Data.Models.CompanySettings companySettings)
+        {
             // Create footer
             var footer = section.Footers.Primary.AddTable();
             footer.Style = "Table";
@@ -79,19 +99,16 @@ namespace OrderTypes_Biller.Export
             footer.Rows.LeftIndent = 0;
             footer.LeftPadding = "0cm";
 
-
-            Paragraph paragraph;
+            //Footer
             foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
             {
-                var fcolumn = footer.AddColumn(cm.ValueToString(footercolumn.ColumnWidth));
+                var fcolumn = footer.AddColumn(Unit.FromCentimeter(footercolumn.ColumnWidth));
                 fcolumn.Borders.Visible = false;
                 fcolumn.Format.Alignment = footercolumn.Alignment;
             }
 
             Row footerrow = footer.AddRow();
-            String addressString = "";
-            var companySettings = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
-            
+
             var index = 0;
             foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
             {
@@ -99,42 +116,56 @@ namespace OrderTypes_Biller.Export
                 footerrow.Cells[0].AddParagraph(content);
                 index += 1;
             }
+            // Footer end
+        }
 
-            // Create the text frame for the address
-            TextFrame addressFrame;
-            addressFrame = section.AddTextFrame();
-            addressFrame.Height = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameHeight);
-            addressFrame.Width = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameWidth);
-            addressFrame.Left = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameLeft);
-            addressFrame.Top = cm.ValueToString(ParentViewModel.SettingsController.AddressFrameTop);
-            addressFrame.RelativeVertical = RelativeVertical.Page;
-            addressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
+        private void CreateHeader(Section section, Biller.Data.Models.CompanySettings companySettings, Order.Order order)
+        {
+            Paragraph paragraph;
+            Table table;
+            Column column;
+            Row row;
+
+            // Header
+            Image image = section.Headers.Primary.AddImage(ParentViewModel.SettingsController.RelativeImagePath);
+            image.Height = "2.5cm";
+            image.LockAspectRatio = true;
+            image.RelativeVertical = RelativeVertical.Line;
+            image.RelativeHorizontal = RelativeHorizontal.Margin;
+            image.Top = ShapePosition.Top;
+            image.Left = ShapePosition.Center;
+            image.WrapFormat.Style = WrapStyle.Through;
+
+            // Addresses
+            table = section.Headers.Primary.AddTable();
+            table.Style = "Table";
+            table.Rows.Alignment = RowAlignment.Left;
+            column = table.AddColumn("10cm");
+            column.Format.Alignment = ParagraphAlignment.Left;
+            row = table.AddRow();
+            row.Format.SpaceBefore = Unit.FromCentimeter(ParentViewModel.SettingsController.AddressFrameTop);
 
             if (ParentViewModel.SettingsController.AddressFrameShowSender)
             {
-                paragraph = addressFrame.AddParagraph(companySettings.MainAddress.OneLineString);
+                paragraph = row.Cells[0].AddParagraph(companySettings.MainAddress.OneLineString);
                 paragraph.Format.Font.Size = 8;
                 // paragraph.Format.SpaceAfter = "3 cm";
             }
-            paragraph = addressFrame.AddParagraph();
-            foreach (var line in order.Customer.MainAddress.AddressStrings)
-            {
-                paragraph.AddText(line);
-                paragraph.AddLineBreak();
-            }
 
-            // Orderinformation
-            Column column;
-            Row row;
-            table = section.AddTable();
+            row = table.AddRow();
+            paragraph = row.Cells[0].AddParagraph();
+            foreach (var line in order.Customer.MainAddress.AddressStrings)
+                paragraph.AddText(line + "\n");
+
+            table = section.Headers.Primary.AddTable();
             table.Style = "Table";
             table.Rows.Alignment = RowAlignment.Right;
+            table.Format.SpaceBefore = Unit.FromCentimeter(ParentViewModel.SettingsController.OrderInfoTop);
             column = table.AddColumn("3cm");
             column.Format.Alignment = ParagraphAlignment.Left;
             column = table.AddColumn("3cm");
             column.Format.Alignment = ParagraphAlignment.Right;
             row = table.AddRow();
-            row.Format.SpaceBefore = cm.ValueToString(ParentViewModel.SettingsController.OrderInfoTop);
             row.Cells[0].AddParagraph("Rechnungsdatum:");
             row.Cells[1].AddParagraph(order.Date.ToString("dd.MM.yyyy"));
             row = table.AddRow();
@@ -146,10 +177,22 @@ namespace OrderTypes_Biller.Export
                 row.Cells[0].AddParagraph("Kundennummer:");
                 row.Cells[1].AddParagraph(order.Customer.CustomerID);
             }
+            if (true)
+            {
+                row = table.AddRow();
+                row.Cells[0].AddParagraph("Seite");
+                paragraph = row.Cells[1].AddParagraph();
+                paragraph.AddPageField();
+                paragraph.AddText(" von ");
+                paragraph.AddNumPagesField();
+            }
+        }
 
+        private void CreatePreListContent(Section section, Order.Order order)
+        {
             // Order ID
-            paragraph = section.AddParagraph();
-            paragraph.Format.SpaceBefore = "1cm";
+            var paragraph = section.AddParagraph();
+            //paragraph.Format.SpaceBefore = "8cm";
             paragraph.Style = "Reference";
             paragraph.AddFormattedText(order.LocalizedDocumentType + " Nr. " + order.DocumentID, TextFormat.Bold);
 
@@ -159,30 +202,34 @@ namespace OrderTypes_Biller.Export
                 paragraph = section.AddParagraph(order.OrderOpeningText);
                 paragraph.Format.SpaceAfter = "0.75cm";
             }
+        }
 
+        private void CreateArticleList(Section section, Order.Order order)
+        {
             // Create the article table
-            table = section.AddTable();
+            var table = section.AddTable();
             table.Style = "Table";
             table.Borders.Color = TableBorder;
             table.Borders.Width = 0.25;
             table.Borders.Left.Width = 0.5;
             table.Borders.Right.Width = 0.5;
             table.Rows.LeftIndent = 0;
-            
+
             // Article list columns
-            foreach(var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
+            foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
-                column = table.AddColumn(cm.ValueToString(ArticleColumn.ColumnWidth));
+                var column = table.AddColumn(Unit.FromCentimeter(ArticleColumn.ColumnWidth));
                 column.Format.Alignment = ArticleColumn.Alignment;
             }
 
             // Create the header of the table
-            row = table.AddRow();
+            // ToDo: Check, if there is any column! Else this will throw an Exception
+            var row = table.AddRow();
             row.HeadingFormat = true;
             row.Format.SpaceBefore = "0,1cm";
             row.Format.SpaceAfter = "0,25cm";
-            
-            index = 0;
+
+            var index = 0;
             foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumns)
             {
                 row.Cells[index].AddParagraph(ArticleColumn.Header);
@@ -190,7 +237,7 @@ namespace OrderTypes_Biller.Export
             }
 
             logger.Trace("FillContent - AddArticle " + order.DocumentType + ":" + order.DocumentID);
-            
+
             foreach (var article in order.OrderedArticles)
             {
                 logger.Trace("AddArticle - " + article.ArticleID);
@@ -229,7 +276,7 @@ namespace OrderTypes_Biller.Export
             row.Cells[0].AddParagraph("Zwischensumme Netto");
             row.Cells[0].Format.Font.Bold = true;
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-            row.Cells[0].MergeRight = lastcolumn-1;
+            row.Cells[0].MergeRight = lastcolumn - 1;
             row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetArticleSummary.AmountString);
             row.Format.SpaceBefore = "0,1cm";
             row.Cells[0].Borders.Bottom = NoBorder.Clone();
@@ -309,18 +356,19 @@ namespace OrderTypes_Biller.Export
             row.Cells[lastcolumn].Borders.Bottom = BlackThickBorder.Clone();
             row.Format.SpaceBefore = "0,25cm";
             row.Format.SpaceAfter = "0,05cm";
+        }
+
+        private void CreatePostListContent(Section section, Order.Order order)
+        {
+            // Add payment paragraph
 
             // Add the notes paragraph
-            paragraph = document.LastSection.AddParagraph();
+            var paragraph = section.AddParagraph();
             paragraph.Format.SpaceBefore = "1cm";
             paragraph.AddText(order.OrderClosingText);
-
-            return document;
         }
 
         readonly static Color TableBorder = new Color(0, 0, 0);
-        readonly static Color TableBlue = new Color(235, 240, 249);
-        readonly static Color TableGray = new Color(242, 242, 242);
 
         public System.Windows.UIElement PreviewControl
         {
@@ -416,6 +464,47 @@ namespace OrderTypes_Biller.Export
                 return article.RoundedNetOrderValue.ToString();
             if (placeholder == "{Rebate}")
                 return article.OrderRebate.PercentageString;
+            return placeholder;
+        }
+
+        private string ReplaceDocumentPlaceHolder(string placeholder, Order.Order order)
+        {
+            if (placeholder.Contains("{DocumentDate}"))
+            {
+                Regex.Replace(placeholder, "[{]DocumentDate[}][{][+]+[0-9]{1,}[}]", delegate(Match match)
+                {
+                    string v = match.ToString();
+                    v = v.Replace("{Date}", "").Replace("{", "").Replace("}", "");
+                    return order.Date.AddDays(int.Parse(v)).ToString("dd.MM.yyyy");
+                });
+                Regex.Replace(placeholder, "[{]DocumentDate[}][{][-]+[0-9]{1,}[}]", delegate(Match match)
+                {
+                    string v = match.ToString();
+                    v = v.Replace("{DocumentDate}", "").Replace("{", "").Replace("}", "");
+                    return order.Date.AddDays(-int.Parse(v)).ToString("dd.MM.yyyy");
+                });
+            }
+            if (placeholder.Contains("{DateOfDerlivery}"))
+            {
+                Regex.Replace(placeholder, "[{]DateOfDerlivery[}][{][+]+[0-9]{1,}[}]", delegate(Match match)
+                {
+                    string v = match.ToString();
+                    v = v.Replace("{Date}", "").Replace("{", "").Replace("}", "");
+                    return order.DateOfDelivery.AddDays(int.Parse(v)).ToString("dd.MM.yyyy");
+                });
+                Regex.Replace(placeholder, "[{]DateOfDerlivery[}][{][-]+[0-9]{1,}[}]", delegate(Match match)
+                {
+                    string v = match.ToString();
+                    v = v.Replace("{DateOfDerlivery}", "").Replace("{", "").Replace("}", "");
+                    return order.DateOfDelivery.AddDays(-int.Parse(v)).ToString("dd.MM.yyyy");
+                });
+            }
+            if (placeholder == "{OrderValueGross}")
+                return order.OrderCalculation.OrderSummary.ToString();
+            if (placeholder == "{OrderValueNet}")
+                return order.OrderCalculation.NetOrderSummary.ToString();
+            if (placeholder == "{CashBackValue}")
+                return order.OrderCalculation.CashBack.ToString();
             return placeholder;
         }
 
