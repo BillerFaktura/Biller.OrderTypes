@@ -166,6 +166,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\appbar.add.png" />
+    <Content Include="Images\appbar.arrow.down.png" />
+    <Content Include="Images\appbar.arrow.up.png" />
+    <Content Include="Images\appbar.delete.png" />
     <Content Include="NLog.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
