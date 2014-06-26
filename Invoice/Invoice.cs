@@ -70,13 +70,13 @@ namespace OrderTypes_Biller.Invoice
             return element;
         }
 
-        public Biller.Data.Utils.EAddress DeliveryAddress
+        public Biller.Core.Utils.EAddress DeliveryAddress
         {
             get { return GetValue(() => DeliveryAddress); }
             set { SetValue(value); }
         }
 
-        public override Biller.Data.Interfaces.IXMLStorageable GetNewInstance()
+        public override Biller.Core.Interfaces.IXMLStorageable GetNewInstance()
         {
             return new Invoice();
         }

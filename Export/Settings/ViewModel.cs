@@ -11,7 +11,7 @@ using System.Windows.Controls;
 
 namespace OrderTypes_Biller.Export.Settings
 {
-    public class ViewModel : Biller.Data.Utils.PropertyChangedHelper, Biller.UI.Interface.IViewModel
+    public class ViewModel : Biller.Core.Utils.PropertyChangedHelper, Biller.UI.Interface.IViewModel
     {
         static List<string> allowedDataFields = new List<string>(new[] { "{CustomerAddressWithLineBreak}", "{CustomerAddressOneLine}", "{CustomerName}", "{SenderAddressWithLineBreak}",
         "{SenderAddressOneLine}", "{LocalizedDocumentType}", "{DocumentID}", "{DocumentType}", "{DocumentDate}", "{DateOfDelivery}", "{PaymentMethodeName}", "{PaymentMethodeText}",

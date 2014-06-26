@@ -166,7 +166,7 @@ namespace OrderTypes_Biller.Export.Settings
         private void WatermarkTextBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var openFileDialog = new Microsoft.Win32.OpenFileDialog();
-            openFileDialog.Filter = "Bilder|*.jpg; *.jpeg; *.jpe; *.jfif; *.png|Alle Dateien|*.*";
+            openFileDialog.Filter = "Bilder|*.jpg; *.jpeg; *.jpe; *.jfif; *.png|PDF Dokument|*.pdf|Alle Dateien|*.*";
             openFileDialog.Multiselect = false;
             if (openFileDialog.ShowDialog() == true)
                 (sender as TextBox).Text = openFileDialog.FileName;

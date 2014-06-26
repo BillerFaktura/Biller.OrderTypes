@@ -1,6 +1,6 @@
-﻿using Biller.Data;
-using Biller.Data.Articles;
-using Biller.Data.Utils;
+﻿using Biller.Core;
+using Biller.Core.Articles;
+using Biller.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace OrderTypes_Biller.Calculations
 {
-    public class DefaultOrderCalculation : Biller.Data.Utils.PropertyChangedHelper
+    public class DefaultOrderCalculation : Biller.Core.Utils.PropertyChangedHelper
     {
         private Order.Order _parentOrder;
 
@@ -30,7 +30,7 @@ namespace OrderTypes_Biller.Calculations
             OrderRebate = new EMoney(0, true);
             NetShipment = new EMoney(0, false);
             NetOrderRebate = new EMoney(0, false);
-            TaxValues = new ObservableCollection<Biller.Data.Models.TaxClassMoneyModel>();
+            TaxValues = new ObservableCollection<Biller.Core.Models.TaxClassMoneyModel>();
             parentOrder.OrderedArticles.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler(OnOrderedArticleCollectionChanged);
             parentOrder.OrderRebate.PropertyChanged += article_PropertyChanged;
             parentOrder.PaymentMethode.PropertyChanged += article_PropertyChanged;
@@ -84,7 +84,7 @@ namespace OrderTypes_Biller.Calculations
                 }
                 else
                 {
-                    TaxValues.Add(new Biller.Data.Models.TaxClassMoneyModel() { Value = new Money(article.ExactVAT), TaxClass = article.TaxClass });
+                    TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(article.ExactVAT), TaxClass = article.TaxClass });
                 }
             }
 
@@ -130,7 +130,7 @@ namespace OrderTypes_Biller.Calculations
                     foreach (var item in TaxValues)
                         wholetax += item.Value.Amount;
 
-                    List<Biller.Data.Models.TaxClassMoneyModel> temporaryTaxes = new List<Biller.Data.Models.TaxClassMoneyModel>();
+                    List<Biller.Core.Models.TaxClassMoneyModel> temporaryTaxes = new List<Biller.Core.Models.TaxClassMoneyModel>();
                     foreach (var taxitem in TaxValues)
                     {
                         var ratio = 1 / (wholetax / taxitem.Value.Amount);
@@ -140,7 +140,7 @@ namespace OrderTypes_Biller.Calculations
                         shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
                         if ((bool)keyValueStore.GetByKey("TaxSupplementaryWorkSeperate").Value)
                         {
-                            temporaryTaxes.Add(new Biller.Data.Models.TaxClassMoneyModel() { Value = new Money(ratio * shipment.ExactVAT), TaxClass = taxitem.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
+                            temporaryTaxes.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(ratio * shipment.ExactVAT), TaxClass = taxitem.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
                         }
                         else
                         {
@@ -151,7 +151,7 @@ namespace OrderTypes_Biller.Calculations
                     NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - wholeShipmentTax;
                     NetOrderSummary.Amount += NetShipment.Amount;
 
-                    foreach (Biller.Data.Models.TaxClassMoneyModel temporaryTax in temporaryTaxes)
+                    foreach (Biller.Core.Models.TaxClassMoneyModel temporaryTax in temporaryTaxes)
                     {
                         TaxValues.Add(temporaryTax);
                     }
@@ -162,7 +162,7 @@ namespace OrderTypes_Biller.Calculations
                     shipment.TaxClass = (TaxClass)keyValueStore.GetByKey("ShipmentTaxClass").Value;
                     shipment.OrderedAmount = 1;
                     shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
-                    TaxValues.Add(new Biller.Data.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
+                    TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
                     NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - shipment.ExactVAT;
                     NetOrderSummary.Amount += NetShipment.Amount;
                 }
@@ -212,7 +212,7 @@ namespace OrderTypes_Biller.Calculations
 
         public EMoney NetOrderRebate { get { return GetValue(() => NetOrderRebate); } set { SetValue(value); } }
 
-        public ObservableCollection<Biller.Data.Models.TaxClassMoneyModel> TaxValues { get { return GetValue(() => TaxValues); } set { SetValue(value); } }
+        public ObservableCollection<Biller.Core.Models.TaxClassMoneyModel> TaxValues { get { return GetValue(() => TaxValues); } set { SetValue(value); } }
 
     }
 }

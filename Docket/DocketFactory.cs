@@ -1,6 +1,6 @@
-﻿using Biller.Data;
+﻿using Biller.Core;
 using Biller;
-using Biller.Data.Document;
+using Biller.Core.Document;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Windows;
 
 namespace OrderTypes_Biller.Docket
 {
-    public class DocketFactory : Biller.Data.Interfaces.DocumentFactory
+    public class DocketFactory : Biller.Core.Interfaces.DocumentFactory
     {
         public string DocumentType { get { return "Docket"; } }
 
@@ -49,13 +49,13 @@ namespace OrderTypes_Biller.Docket
         {
             if (target is Order.Order)
             {
-                if (source is Biller.Data.Customers.Customer)
+                if (source is Biller.Core.Customers.Customer)
                 {
-                    (target as Order.Order).Customer = (source as Biller.Data.Customers.Customer);
-                    (target as Order.Order).PaymentMethode = (source as Biller.Data.Customers.Customer).DefaultPaymentMethode;
+                    (target as Order.Order).Customer = (source as Biller.Core.Customers.Customer);
+                    (target as Order.Order).PaymentMethode = (source as Biller.Core.Customers.Customer).DefaultPaymentMethode;
                 }
 
-                if (source is Biller.Data.Articles.Article)
+                if (source is Biller.Core.Articles.Article)
                 {
                     if (target is Order.Order)
                     {
@@ -63,7 +63,7 @@ namespace OrderTypes_Biller.Docket
                         {
                             //Check pricegroup
                             var customer = (target as Order.Order).Customer;
-                            var orderedArticle = new Biller.Data.Articles.OrderedArticle(source as Biller.Data.Articles.Article);
+                            var orderedArticle = new Biller.Core.Articles.OrderedArticle(source as Biller.Core.Articles.Article);
                             orderedArticle.OrderedAmount = 1;
                             orderedArticle.OrderPosition = (target as Order.Order).OrderedArticles.Count + 1;
 
@@ -84,7 +84,7 @@ namespace OrderTypes_Biller.Docket
                         }
                         else
                         {
-                            var orderedArticle = new Biller.Data.Articles.OrderedArticle(source as Biller.Data.Articles.Article);
+                            var orderedArticle = new Biller.Core.Articles.OrderedArticle(source as Biller.Core.Articles.Article);
                             orderedArticle.OrderedAmount = 1;
                             orderedArticle.OrderPrice = orderedArticle.Price1;
                             orderedArticle.OrderPosition = (target as Order.Order).OrderedArticles.Count + 1;
@@ -95,7 +95,7 @@ namespace OrderTypes_Biller.Docket
             }
         }
 
-        public Biller.Data.Document.PreviewDocument GetPreviewDocument(Biller.Data.Document.Document source)
+        public Biller.Core.Document.PreviewDocument GetPreviewDocument(Biller.Core.Document.Document source)
         {
             return Order.Order.PreviewFromOrder(source as Order.Order);
         }

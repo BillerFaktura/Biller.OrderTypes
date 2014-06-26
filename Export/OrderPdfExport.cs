@@ -11,12 +11,13 @@ using System.Diagnostics;
 using MigraDoc.Rendering.Printing;
 using MigraDoc.DocumentObjectModel.IO;
 using NLog;
-using Biller.Data.Models;
+using Biller.Core.Models;
 using System.Text.RegularExpressions;
+using PdfSharp;
 
 namespace OrderTypes_Biller.Export
 {
-    public class OrderPdfExport : Biller.Data.Interfaces.IExport
+    public class OrderPdfExport : Biller.Core.Interfaces.IExport
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
 
@@ -43,8 +44,7 @@ namespace OrderTypes_Biller.Export
             var pageSetup = document.DefaultPageSetup.Clone();
             pageSetup.TopMargin = Unit.FromCentimeter(11);
             pageSetup.BottomMargin = Unit.FromCentimeter(4);
-
-            var companySettings = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Data.Models.CompanySettings())).FirstOrDefault() as Biller.Data.Models.CompanySettings;
+            var companySettings = (await MainWindowViewModel.Database.AllStorageableItems(new Biller.Core.Models.CompanySettings())).FirstOrDefault() as Biller.Core.Models.CompanySettings;
 
             PrepareStyles(document);
 
@@ -89,9 +89,8 @@ namespace OrderTypes_Biller.Export
             style.Font.Size = 16;
         }
 
-        private void CreateFooter(Section section, Biller.Data.Models.CompanySettings companySettings)
+        private void CreateFooter(Section section, Biller.Core.Models.CompanySettings companySettings)
         {
-            // Create footer
             var footer = section.Footers.Primary.AddTable();
             footer.Style = "Table";
             footer.Borders.Color = Color.Empty;
@@ -99,7 +98,6 @@ namespace OrderTypes_Biller.Export
             footer.Rows.LeftIndent = 0;
             footer.LeftPadding = "0cm";
 
-            //Footer
             foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
             {
                 var fcolumn = footer.AddColumn(Unit.FromCentimeter(footercolumn.ColumnWidth));
@@ -107,34 +105,74 @@ namespace OrderTypes_Biller.Export
                 fcolumn.Format.Alignment = footercolumn.Alignment;
             }
 
-            Row footerrow = footer.AddRow();
-
-            var index = 0;
-            foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
+            if (ParentViewModel.SettingsController.FooterColumns.Count > 0)
             {
-                var content = ReplaceFooterPlaceHolder(footercolumn.Value, companySettings);
-                footerrow.Cells[0].AddParagraph(content);
-                index += 1;
+                Row footerrow = footer.AddRow();
+
+                var index = 0;
+                foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
+                {
+                    var content = ReplaceFooterPlaceHolder(footercolumn.Value, companySettings);
+                    footerrow.Cells[0].AddParagraph(content);
+                    index += 1;
+                }
             }
-            // Footer end
         }
 
-        private void CreateHeader(Section section, Biller.Data.Models.CompanySettings companySettings, Order.Order order)
+        private void CreateHeader(Section section, Biller.Core.Models.CompanySettings companySettings, Order.Order order)
         {
             Paragraph paragraph;
             Table table;
             Column column;
             Row row;
 
-            // Header
-            Image image = section.Headers.Primary.AddImage(ParentViewModel.SettingsController.RelativeImagePath);
-            image.Height = "2.5cm";
-            image.LockAspectRatio = true;
-            image.RelativeVertical = RelativeVertical.Line;
-            image.RelativeHorizontal = RelativeHorizontal.Margin;
-            image.Top = ShapePosition.Top;
-            image.Left = ShapePosition.Center;
-            image.WrapFormat.Style = WrapStyle.Through;
+            if (!String.IsNullOrEmpty(ParentViewModel.SettingsController.DisplayedPath))
+            {
+                Image image = section.Headers.Primary.AddImage(ParentViewModel.SettingsController.DisplayedPath);
+                image.LockAspectRatio = true;
+                switch (ParentViewModel.SettingsController.RelativeVertical)
+                {
+                    case 0:
+                        image.RelativeVertical = RelativeVertical.Margin;
+                        break;
+                    case 1:
+                        image.RelativeVertical = RelativeVertical.Page;
+                        break;
+                    default:
+                        image.RelativeVertical = RelativeVertical.Margin;
+                        break;
+                }
+                switch (ParentViewModel.SettingsController.RelativeHorizontal)
+                {
+                    case 0:
+                        image.RelativeHorizontal = RelativeHorizontal.Margin;
+                        break;
+                    case 1:
+                        image.RelativeHorizontal = RelativeHorizontal.Page;
+                        break;
+                    default:
+                        image.RelativeHorizontal = RelativeHorizontal.Margin;
+                        break;
+                }
+                switch (ParentViewModel.SettingsController.PositionLeft)
+                {
+                    case 0:
+                        image.Left = ShapePosition.Left;
+                        break;
+                    case 1:
+                        image.Left = ShapePosition.Center;
+                        break;
+                    case 2:
+                        image.Left = ShapePosition.Right;
+                        break;
+                    default:
+                        image.RelativeHorizontal = RelativeHorizontal.Margin;
+                        break;
+                }
+                image.Top = ShapePosition.Top;    
+                image.WrapFormat.Style = WrapStyle.Through;
+            }
+            
 
             // Addresses
             table = section.Headers.Primary.AddTable();
@@ -149,7 +187,6 @@ namespace OrderTypes_Biller.Export
             {
                 paragraph = row.Cells[0].AddParagraph(companySettings.MainAddress.OneLineString);
                 paragraph.Format.Font.Size = 8;
-                // paragraph.Format.SpaceAfter = "3 cm";
             }
 
             row = table.AddRow();
@@ -160,7 +197,6 @@ namespace OrderTypes_Biller.Export
             table = section.Headers.Primary.AddTable();
             table.Style = "Table";
             table.Rows.Alignment = RowAlignment.Right;
-            table.Format.SpaceBefore = Unit.FromCentimeter(ParentViewModel.SettingsController.OrderInfoTop);
             column = table.AddColumn("3cm");
             column.Format.Alignment = ParagraphAlignment.Left;
             column = table.AddColumn("3cm");
@@ -177,7 +213,7 @@ namespace OrderTypes_Biller.Export
                 row.Cells[0].AddParagraph("Kundennummer:");
                 row.Cells[1].AddParagraph(order.Customer.CustomerID);
             }
-            if (true)
+            if (ParentViewModel.SettingsController.OrderInfoShowPageNumbers)
             {
                 row = table.AddRow();
                 row.Cells[0].AddParagraph("Seite");
@@ -222,8 +258,12 @@ namespace OrderTypes_Biller.Export
                 column.Format.Alignment = ArticleColumn.Alignment;
             }
 
-            // Create the header of the table
-            // ToDo: Check, if there is any column! Else this will throw an Exception
+
+            if (ParentViewModel.SettingsController.ArticleListColumns.Count == 0)
+            {
+                //ToDo: Throw an Exception
+                return;
+            }
             var row = table.AddRow();
             row.HeadingFormat = true;
             row.Format.SpaceBefore = "0,1cm";
@@ -376,7 +416,7 @@ namespace OrderTypes_Biller.Export
             set { }
         }
 
-        public async void RenderDocumentPreview(Biller.Data.Document.Document document)
+        public async void RenderDocumentPreview(Biller.Core.Document.Document document)
         {
             if (document is Order.Order)
                 PreviewElement.Ddl = DdlWriter.WriteToString(await GetDocument(document as Order.Order));
@@ -387,7 +427,7 @@ namespace OrderTypes_Biller.Export
             return await FillContent(order);
         }
 
-        public async void SaveDocument(Biller.Data.Document.Document document, string filename, bool OpenOnSuccess = true)
+        public async void SaveDocument(Biller.Core.Document.Document document, string filename, bool OpenOnSuccess = true)
         {
             if (document is Order.Order)
             {
@@ -402,7 +442,7 @@ namespace OrderTypes_Biller.Export
             }
         }
 
-        public void PrintDocument(Biller.Data.Document.Document document)
+        public void PrintDocument(Biller.Core.Document.Document document)
         {
             /*
             // Reuse the renderer from the preview
@@ -436,7 +476,7 @@ namespace OrderTypes_Biller.Export
             SaveDocument(document, document.DocumentType + document.DocumentID + ".pdf");
         }
 
-        private string ReplaceArticlePlaceHolder(string placeholder, Biller.Data.Articles.OrderedArticle article)
+        private string ReplaceArticlePlaceHolder(string placeholder, Biller.Core.Articles.OrderedArticle article)
         {
             if (placeholder == "{Position}")
                 return article.OrderPosition.ToString();
@@ -508,7 +548,7 @@ namespace OrderTypes_Biller.Export
             return placeholder;
         }
 
-        private string ReplaceFooterPlaceHolder(string placeholder, Biller.Data.Models.CompanySettings companySettings)
+        private string ReplaceFooterPlaceHolder(string placeholder, Biller.Core.Models.CompanySettings companySettings)
         {
             if (placeholder.Contains("{CompanyAddress}"))
             {

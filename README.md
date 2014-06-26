@@ -12,7 +12,7 @@ Dependencies
 --------------
 * Biller
 * Biller.Controls
-* Biller.Data
+* Biller.Core
 * Fluent
 * MigraDoc.DocumentObjectModel.WPF
 * MigraDoc.Rendering.WPF

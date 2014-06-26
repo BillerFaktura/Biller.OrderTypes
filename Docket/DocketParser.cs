@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Biller.Data.Utils;
-using Biller.Data.Document;
+using Biller.Core.Utils;
+using Biller.Core.Document;
 
 namespace OrderTypes_Biller.Docket
 {
-    public class DocketParser : Biller.Data.Interfaces.DocumentParser
+    public class DocketParser : Biller.Core.Interfaces.DocumentParser
     {
         /// <summary>
         /// Parses <see cref="Customer"/> and <see cref="OrderedArticles"/>.
@@ -18,7 +18,7 @@ namespace OrderTypes_Biller.Docket
         /// <param name="data"></param>
         /// <param name="database"></param>
         /// <returns></returns>
-        public bool ParseAdditionalData(ref Document document, XElement data, Biller.Data.Interfaces.IDatabase database)
+        public bool ParseAdditionalData(ref Document document, XElement data, Biller.Core.Interfaces.IDatabase database)
         {
             if (document is Docket)
             {
@@ -30,7 +30,7 @@ namespace OrderTypes_Biller.Docket
                 (document as Docket).OrderedArticles.Clear();
                 foreach (XElement article in articles)
                 {
-                    var temp = new Biller.Data.Articles.OrderedArticle();
+                    var temp = new Biller.Core.Articles.OrderedArticle();
 
                     var task = database.ArticleUnits();
                     temp.ArticleUnit = task.Result.Where(x => x.Name == article.Element("ArticleUnit").Value).Single();
@@ -63,7 +63,7 @@ namespace OrderTypes_Biller.Docket
 
         public bool ParseAdditionalPreviewData(ref dynamic document, XElement data)
         {
-            var money = new Biller.Data.Utils.EMoney(0);
+            var money = new Biller.Core.Utils.EMoney(0);
             money.ParseFromXElement(data.Element("PreviewValue").Element(money.XElementName));
             document.Value = money;
             document.LocalizedDocumentType = LocalizedDocumentType;

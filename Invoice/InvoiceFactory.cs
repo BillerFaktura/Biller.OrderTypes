@@ -8,11 +8,11 @@ using System.Windows;
 
 namespace OrderTypes_Biller.Invoice
 {
-    public class InvoiceFactory : Biller.Data.Interfaces.DocumentFactory
+    public class InvoiceFactory : Biller.Core.Interfaces.DocumentFactory
     {
         public string DocumentType { get { return "Invoice"; } }
 
-        public Biller.Data.Document.Document GetNewDocument()
+        public Biller.Core.Document.Document GetNewDocument()
         {
             return new Invoice();
         }
@@ -46,19 +46,19 @@ namespace OrderTypes_Biller.Invoice
         /// <summary>
         /// Works with the <see cref="source"/> when <see cref="target"/> is type of <see cref="Order"/>.
         /// </summary>
-        /// <param name="source">When source is type of <see cref="Biller.Data.Customers.Customer"/> or <see cref="Biller.Data.Articles.Article"/> the data will be passed to the target <see cref="Order.Order"/>.</param>
+        /// <param name="source">When source is type of <see cref="Biller.Core.Customers.Customer"/> or <see cref="Biller.Core.Articles.Article"/> the data will be passed to the target <see cref="Order.Order"/>.</param>
         /// <param name="target"><see cref="source"/> will be passed to <see cref="target"/> if it's type of <see cref="Order.Order"/>.</param>
-        public void ReceiveData(object source, Biller.Data.Document.Document target)
+        public void ReceiveData(object source, Biller.Core.Document.Document target)
         {
             if (target is Order.Order)
             {
-                if (source is Biller.Data.Customers.Customer)
+                if (source is Biller.Core.Customers.Customer)
                 {
-                    (target as Order.Order).Customer = (source as Biller.Data.Customers.Customer);
-                    (target as Order.Order).PaymentMethode = (source as Biller.Data.Customers.Customer).DefaultPaymentMethode;
+                    (target as Order.Order).Customer = (source as Biller.Core.Customers.Customer);
+                    (target as Order.Order).PaymentMethode = (source as Biller.Core.Customers.Customer).DefaultPaymentMethode;
                 }
 
-                if (source is Biller.Data.Articles.Article)
+                if (source is Biller.Core.Articles.Article)
                 {
                     if (target is Order.Order)
                     {
@@ -66,7 +66,7 @@ namespace OrderTypes_Biller.Invoice
                         {
                             //Check pricegroup
                             var customer = (target as Order.Order).Customer;
-                            var orderedArticle = new Biller.Data.Articles.OrderedArticle(source as Biller.Data.Articles.Article);
+                            var orderedArticle = new Biller.Core.Articles.OrderedArticle(source as Biller.Core.Articles.Article);
                             orderedArticle.OrderedAmount = 1;
                             orderedArticle.OrderPosition = (target as Order.Order).OrderedArticles.Count + 1;
 
@@ -87,7 +87,7 @@ namespace OrderTypes_Biller.Invoice
                         }
                         else
                         {
-                            var orderedArticle = new Biller.Data.Articles.OrderedArticle(source as Biller.Data.Articles.Article);
+                            var orderedArticle = new Biller.Core.Articles.OrderedArticle(source as Biller.Core.Articles.Article);
                             orderedArticle.OrderedAmount = 1;
                             orderedArticle.OrderPrice = orderedArticle.Price1;
                             orderedArticle.OrderPosition = (target as Order.Order).OrderedArticles.Count + 1;
@@ -99,7 +99,7 @@ namespace OrderTypes_Biller.Invoice
         }
 
 
-        public Biller.Data.Document.PreviewDocument GetPreviewDocument(Biller.Data.Document.Document source)
+        public Biller.Core.Document.PreviewDocument GetPreviewDocument(Biller.Core.Document.Document source)
         {
             return Order.Order.PreviewFromOrder(source as Order.Order);
         }

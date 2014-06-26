@@ -3,45 +3,38 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Biller.Data.Utils;
+using Biller.Core.Utils;
 using System.Collections.ObjectModel;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
+using System.ComponentModel;
 
 namespace OrderTypes_Biller.Export.Settings
 {
-    public class SettingsController : Biller.Data.Utils.PropertyChangedHelper, Biller.Data.Interfaces.IXMLStorageable
+    public class SettingsController : Biller.Core.Utils.PropertyChangedHelper, Biller.Core.Interfaces.IXMLStorageable
     {
-        public Biller.Data.Utils.Unit cmUnit { get; private set; }
+        public Biller.Core.Utils.Unit cmUnit { get; private set; }
 
         public SettingsController()
         {
             cmUnit = new Unit() { DecimalDigits = 3, DecimalSeperator = ".", Name = "Centimeter", ShortName = "cm", ThousandSeperator = "" };
-            AddressFrameHeight = 3;
-            AddressFrameWidth = 7;
-            AddressFrameLeft = 0;
             AddressFrameTop = 5;
             AddressFrameShowSender = true;
-            OrderInfoTop = 4;
-            OrderInfoRight = -0.5;
+            
             ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
             FooterColumns = new ObservableCollection<Models.FooterColumnModel>();
         }
 
         #region AddressFrame
-        public double AddressFrameHeight { get { return GetValue(() => AddressFrameHeight); } set { SetValue(value); } }
-        public double AddressFrameWidth { get { return GetValue(() => AddressFrameWidth); } set { SetValue(value); } }
         public double AddressFrameTop { get { return GetValue(() => AddressFrameTop); } set { SetValue(value); } }
-        public double AddressFrameLeft { get { return GetValue(() => AddressFrameLeft); } set { SetValue(value); } }
         public bool AddressFrameShowSender { get { return GetValue(() => AddressFrameShowSender); } set { SetValue(value); } }
         #endregion
 
         #region OrderInfo
-        public double OrderInfoTop { get { return GetValue(() => OrderInfoTop); } set { SetValue(value); } }
-        public double OrderInfoRight { get { return GetValue(() => OrderInfoRight); } set { SetValue(value); } }
         public bool OrderInfoShowCustomerID { get { return GetValue(() => OrderInfoShowCustomerID); } set { SetValue(value); } }
+        public bool OrderInfoShowPageNumbers { get { return GetValue(() => OrderInfoShowPageNumbers); } set { SetValue(value); } }
         #endregion
 
         #region ArticleList
@@ -53,7 +46,36 @@ namespace OrderTypes_Biller.Export.Settings
         #endregion
 
         #region Header
-        public string RelativeImagePath { get { return GetValue(() => RelativeImagePath); } set { SetValue(MakeRelativePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value)); } }
+        [DefaultValue("")]
+        public string RelativeImagePath { get; set; }
+        [DefaultValue("")]
+        public string AbsoluteImagePath { get; set; }
+        
+        [JsonIgnore]
+        public string DisplayedPath
+        { 
+            get
+            {
+                if (File.Exists(AbsoluteImagePath))
+                    return AbsoluteImagePath;
+                var path = MakeAbsolutePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), RelativeImagePath);
+                if (File.Exists(path))
+                {
+                    AbsoluteImagePath = path;
+                    return path;
+                }
+                //ToDo: Add Notification
+                return "";
+            } 
+            set
+            {
+                SetValue(value);
+                ProcessPath(value);
+            }
+        }
+        public int PositionLeft { get { return GetValue(() => PositionLeft); } set { SetValue(value); } }
+        public int RelativeHorizontal { get { return GetValue(() => RelativeHorizontal); } set { SetValue(value); } }
+        public int RelativeVertical { get { return GetValue(() => RelativeVertical); } set { SetValue(value); } }
         #endregion
 
         public XElement GetXElement()
@@ -69,15 +91,15 @@ namespace OrderTypes_Biller.Export.Settings
 
             string json = source.Element("Content").Value;
             var settings = JsonConvert.DeserializeObject<SettingsController>(json);
-            AddressFrameHeight = settings.AddressFrameHeight;
-            AddressFrameWidth = settings.AddressFrameWidth;
             AddressFrameTop = settings.AddressFrameTop;
-            AddressFrameLeft = settings.AddressFrameLeft;
             AddressFrameShowSender = settings.AddressFrameShowSender;
-            OrderInfoTop = settings.OrderInfoTop;
-            OrderInfoRight = settings.OrderInfoRight;
+            PositionLeft = settings.PositionLeft;
+            RelativeHorizontal = settings.RelativeHorizontal;
+            RelativeVertical = settings.RelativeVertical;
             OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
+            OrderInfoShowPageNumbers = settings.OrderInfoShowPageNumbers;
             RelativeImagePath = settings.RelativeImagePath;
+            AbsoluteImagePath = settings.AbsoluteImagePath;
             if (settings.ArticleListColumns != null)
                 ArticleListColumns = settings.ArticleListColumns;
             else
@@ -114,7 +136,7 @@ namespace OrderTypes_Biller.Export.Settings
             get { return "ID"; }
         }
 
-        public Biller.Data.Interfaces.IXMLStorageable GetNewInstance()
+        public Biller.Core.Interfaces.IXMLStorageable GetNewInstance()
         {
             return new SettingsController();
         }
@@ -128,7 +150,7 @@ namespace OrderTypes_Biller.Export.Settings
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="UriFormatException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        public static String MakeRelativePath(String fromPath, String toPath)
+        public static string MakeRelativePath(string fromPath, string toPath)
         {
             if (toPath.StartsWith("..\\"))
                 return toPath;
@@ -141,7 +163,7 @@ namespace OrderTypes_Biller.Export.Settings
             if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
 
             Uri relativeUri = fromUri.MakeRelativeUri(toUri);
-            String relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+            string relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (toUri.Scheme.ToUpperInvariant() == "FILE")
             {
@@ -149,6 +171,28 @@ namespace OrderTypes_Biller.Export.Settings
             }
 
             return relativePath;
+        }
+
+        public static string MakeAbsolutePath(string localPath, string absolutePath)
+        {
+            if (absolutePath == null)
+                return "";
+            if (!absolutePath.StartsWith("..\\"))
+                return absolutePath;
+            var s = Path.Combine(localPath, absolutePath);
+            s = Path.GetFullPath(s);
+            return s;
+        }
+
+        private void ProcessPath(string value)
+        {
+            if (String.IsNullOrEmpty(value))
+            {
+                RelativeImagePath = "";
+                AbsoluteImagePath = "";
+            }
+            RelativeImagePath = MakeRelativePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value);
+            AbsoluteImagePath = MakeAbsolutePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value);
         }
     }
 }

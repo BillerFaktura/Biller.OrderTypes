@@ -1,6 +1,6 @@
-﻿//using Biller.Data;
-//using Biller.Data.Articles;
-//using Biller.Data.Utils;
+﻿//using Biller.Core;
+//using Biller.Core.Articles;
+//using Biller.Core.Utils;
 //using System;
 //using System.Collections.Generic;
 //using System.Linq;
@@ -23,7 +23,7 @@
 //            TaxValues.Clear();
 //            ArticleSummary.Amount = 0;
 //            // iterate through each article and add its value
-//            foreach (Biller.Data.Articles.OrderedArticle article in _parentOrder.OrderedArticles)
+//            foreach (Biller.Core.Articles.OrderedArticle article in _parentOrder.OrderedArticles)
 //            {
 //                NetArticleSummary.Amount += article.RoundedNetOrderValue.Amount;
 //            }
@@ -55,7 +55,7 @@
 //                shipment.TaxClass = GlobalSettings.ShipmentTaxClass;
 //                shipment.OrderedAmount = 1;
 //                shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
-//                TaxValues.Add(new Biller.Data.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = GlobalSettings.LocalizedOnSupplementaryWork });
+//                TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = GlobalSettings.LocalizedOnSupplementaryWork });
 //                NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - shipment.ExactVAT;
 //                NetOrderSummary.Amount += NetShipment.Amount;
 //            }

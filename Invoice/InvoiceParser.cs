@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Biller.Data;
+using Biller.Core;
 
 namespace OrderTypes_Biller.Invoice
 {
-    public class InvoiceParser : Biller.Data.Interfaces.DocumentParser
+    public class InvoiceParser : Biller.Core.Interfaces.DocumentParser
     {
         /// <summary>
         /// Parses <see cref="Customer"/> and <see cref="OrderedArticles"/>.
@@ -17,7 +17,7 @@ namespace OrderTypes_Biller.Invoice
         /// <param name="data"></param>
         /// <param name="database"></param>
         /// <returns></returns>
-        public bool ParseAdditionalData(ref Biller.Data.Document.Document document, XElement data, Biller.Data.Interfaces.IDatabase database)
+        public bool ParseAdditionalData(ref Biller.Core.Document.Document document, XElement data, Biller.Core.Interfaces.IDatabase database)
         {
             if (document is Invoice)
             {
@@ -29,7 +29,7 @@ namespace OrderTypes_Biller.Invoice
                 (document as Invoice).OrderedArticles.Clear();
                 foreach (XElement article in articles)
                 {
-                    var temp = new Biller.Data.Articles.OrderedArticle();
+                    var temp = new Biller.Core.Articles.OrderedArticle();
 
                     var task = database.ArticleUnits();
                     temp.ArticleUnit = task.Result.Where(x => x.Name == article.Element("ArticleUnit").Value).Single();
@@ -49,7 +49,7 @@ namespace OrderTypes_Biller.Invoice
                 catch (Exception e)
                 { }
 
-                var money = new Biller.Data.Utils.Money(0);
+                var money = new Biller.Core.Utils.Money(0);
             }
             else
             {
@@ -62,7 +62,7 @@ namespace OrderTypes_Biller.Invoice
 
         public bool ParseAdditionalPreviewData(ref dynamic document, XElement data)
         {
-            var money = new Biller.Data.Utils.EMoney(0);
+            var money = new Biller.Core.Utils.EMoney(0);
             money.ParseFromXElement(data.Element("PreviewValue").Element(money.XElementName));
             document.Value = money;
             document.LocalizedDocumentType = LocalizedDocumentType;
