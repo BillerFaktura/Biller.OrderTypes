@@ -113,7 +113,7 @@ namespace OrderTypes_Biller.Export
                 foreach (var footercolumn in ParentViewModel.SettingsController.FooterColumns)
                 {
                     var content = ReplaceFooterPlaceHolder(footercolumn.Value, companySettings);
-                    footerrow.Cells[0].AddParagraph(content);
+                    footerrow.Cells[index].AddParagraph(content);
                     index += 1;
                 }
             }
@@ -154,22 +154,29 @@ namespace OrderTypes_Biller.Export
                         image.RelativeHorizontal = RelativeHorizontal.Margin;
                         break;
                 }
-                switch (ParentViewModel.SettingsController.PositionLeft)
+                if (ParentViewModel.SettingsController.PositionLeftIndex >= 0)
                 {
-                    case 0:
-                        image.Left = ShapePosition.Left;
-                        break;
-                    case 1:
-                        image.Left = ShapePosition.Center;
-                        break;
-                    case 2:
-                        image.Left = ShapePosition.Right;
-                        break;
-                    default:
-                        image.RelativeHorizontal = RelativeHorizontal.Margin;
-                        break;
+                    switch (ParentViewModel.SettingsController.PositionLeftIndex)
+                    {
+                        case 0:
+                            image.Left = ShapePosition.Left;
+                            break;
+                        case 1:
+                            image.Left = ShapePosition.Center;
+                            break;
+                        case 2:
+                            image.Left = ShapePosition.Right;
+                            break;
+                        default:
+                            image.Left = ShapePosition.Center;
+                            break;
+                    }
                 }
-                image.Top = ShapePosition.Top;    
+                else
+                {
+                    image.Left = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.PositionLeft);
+                }
+                image.Top = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.PositionLeft);
                 image.WrapFormat.Style = WrapStyle.Through;
             }
             
@@ -401,11 +408,14 @@ namespace OrderTypes_Biller.Export
         private void CreatePostListContent(Section section, Order.Order order)
         {
             // Add payment paragraph
-
-            // Add the notes paragraph
             var paragraph = section.AddParagraph();
             paragraph.Format.SpaceBefore = "1cm";
-            paragraph.AddText(order.OrderClosingText);
+            paragraph.AddText(ReplaceDocumentPlaceHolder(order.PaymentMethode.Text, order));
+
+            // Add the notes paragraph
+            paragraph = section.AddParagraph();
+            paragraph.Format.SpaceBefore = "1cm";
+            paragraph.AddText(ReplaceDocumentPlaceHolder(order.OrderClosingText, order));
         }
 
         readonly static Color TableBorder = new Color(0, 0, 0);
