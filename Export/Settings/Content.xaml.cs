@@ -91,8 +91,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
-            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
-            viewModel.SettingsController.ArticleListColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.ArticleListColumns.Count), viewModel.SelectedArticleListColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
+                viewModel.SettingsController.ArticleListColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.ArticleListColumns.Count), viewModel.SelectedArticleListColumn);
+            }
         }
 
         /// <summary>
@@ -105,8 +108,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
-            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
-            viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
+                viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
+            }
         }
         #endregion
 
@@ -136,8 +142,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.FooterColumns.IndexOf(viewModel.SelectedFooterColumn);
-            viewModel.SettingsController.FooterColumns.RemoveAt(index);
-            viewModel.SettingsController.FooterColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedFooterColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.FooterColumns.RemoveAt(index);
+                viewModel.SettingsController.FooterColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedFooterColumn);
+            }
         }
 
         private void ButtonMoveFooterColumnDown(object sender, RoutedEventArgs e)
@@ -145,8 +154,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.FooterColumns.IndexOf(viewModel.SelectedFooterColumn);
-            viewModel.SettingsController.FooterColumns.RemoveAt(index);
-            viewModel.SettingsController.FooterColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.FooterColumns.Count), viewModel.SelectedFooterColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.FooterColumns.RemoveAt(index);
+                viewModel.SettingsController.FooterColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.FooterColumns.Count), viewModel.SelectedFooterColumn);
+            }
         }
 
         private void ButtonAddFooterColumn(object sender, RoutedEventArgs e)
