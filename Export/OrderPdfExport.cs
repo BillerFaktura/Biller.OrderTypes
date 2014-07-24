@@ -154,9 +154,9 @@ namespace OrderTypes_Biller.Export
                         image.RelativeHorizontal = RelativeHorizontal.Margin;
                         break;
                 }
-                if (ParentViewModel.SettingsController.PositionLeftIndex >= 0)
+                if (ParentViewModel.SettingsController.ImagePositionLeftIndex >= 0)
                 {
-                    switch (ParentViewModel.SettingsController.PositionLeftIndex)
+                    switch (ParentViewModel.SettingsController.ImagePositionLeftIndex)
                     {
                         case 0:
                             image.Left = ShapePosition.Left;
@@ -174,9 +174,9 @@ namespace OrderTypes_Biller.Export
                 }
                 else
                 {
-                    image.Left = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.PositionLeft);
+                    image.Left = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.ImagePositionLeft);
                 }
-                image.Top = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.PositionLeft);
+                image.Top = ParentViewModel.SettingsController.cmUnit.ValueToString(ParentViewModel.SettingsController.ImagePositionTop);
                 image.WrapFormat.Style = WrapStyle.Through;
             }
             

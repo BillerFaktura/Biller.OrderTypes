@@ -15,6 +15,7 @@ namespace OrderTypes_Biller.Export.Settings
 {
     public class SettingsController : Biller.Core.Utils.PropertyChangedHelper, Biller.Core.Interfaces.IXMLStorageable
     {
+        [JsonIgnore]
         public Biller.Core.Utils.Unit cmUnit { get; private set; }
 
         public SettingsController()
@@ -73,7 +74,9 @@ namespace OrderTypes_Biller.Export.Settings
                 ProcessPath(value);
             }
         }
-        public int PositionLeft { get { return GetValue(() => PositionLeft); } set { SetValue(value); } }
+        public double ImagePositionLeft { get { return GetValue(() => ImagePositionLeft); } set { SetValue(value); } }
+        public double ImagePositionTop { get { return GetValue(() => ImagePositionTop); } set { SetValue(value); } }
+        public int ImagePositionLeftIndex { get { return GetValue(() => ImagePositionLeftIndex); } set { SetValue(value); } }
         public int RelativeHorizontal { get { return GetValue(() => RelativeHorizontal); } set { SetValue(value); } }
         public int RelativeVertical { get { return GetValue(() => RelativeVertical); } set { SetValue(value); } }
         #endregion
@@ -93,13 +96,15 @@ namespace OrderTypes_Biller.Export.Settings
             var settings = JsonConvert.DeserializeObject<SettingsController>(json);
             AddressFrameTop = settings.AddressFrameTop;
             AddressFrameShowSender = settings.AddressFrameShowSender;
-            PositionLeft = settings.PositionLeft;
+            ImagePositionLeft = settings.ImagePositionLeft;
             RelativeHorizontal = settings.RelativeHorizontal;
             RelativeVertical = settings.RelativeVertical;
             OrderInfoShowCustomerID = settings.OrderInfoShowCustomerID;
             OrderInfoShowPageNumbers = settings.OrderInfoShowPageNumbers;
             RelativeImagePath = settings.RelativeImagePath;
             AbsoluteImagePath = settings.AbsoluteImagePath;
+            ImagePositionLeftIndex = settings.ImagePositionLeftIndex;
+            ImagePositionTop = settings.ImagePositionTop;
             if (settings.ArticleListColumns != null)
                 ArticleListColumns = settings.ArticleListColumns;
             else
@@ -118,19 +123,21 @@ namespace OrderTypes_Biller.Export.Settings
             {
 
             }
-            
         }
 
+        [JsonIgnore]
         public string XElementName
         {
             get { return "ExportLayoutSetting"; }
         }
 
+        [JsonIgnore]
         public string ID
         {
             get { return "1"; }
         }
 
+        [JsonIgnore]
         public string IDFieldName
         {
             get { return "ID"; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Biller.Core.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -182,6 +183,46 @@ namespace OrderTypes_Biller.Export.Settings
             openFileDialog.Multiselect = false;
             if (openFileDialog.ShowDialog() == true)
                 (sender as TextBox).Text = openFileDialog.FileName;
+        }
+
+        private void ComboBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            var cb = sender as ComboBox;
+            if (cb.SelectedIndex == -1)
+            {
+                var val = cmConverter.cmUnit.StringToValue(cb.Text);
+                cb.Text = cmConverter.cmUnit.ValueToString(val);
+                viewModel.SettingsController.ImagePositionLeft = val;
+            }
+        }
+
+        private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (DataContext == null)
+                return;
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.PropertyChanged += viewModel_PropertyChanged;
+            viewModel.SettingsController.PropertyChanged += SettingsController_PropertyChanged;
+        }
+
+        void viewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SettingsController")
+                (DataContext as Export.Settings.ViewModel).SettingsController.PropertyChanged += SettingsController_PropertyChanged;
+        }
+
+        void SettingsController_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "ImagePositionLeftIndex")
+                if ((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeftIndex == -1)
+                    ComboBoxImagePositionLeft.Text = cmConverter.cmUnit.ValueToString((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeft);
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if ((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeftIndex == -1)
+                ComboBoxImagePositionLeft.Text = cmConverter.cmUnit.ValueToString((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeft);
         }
     }
 }
