@@ -20,7 +20,8 @@ namespace OrderTypes_Biller.Order
         {
             // insert empty values to avoid null exceptions.
             OrderedArticles = new ObservableCollection<Biller.Core.Articles.OrderedArticle>();
-            DocumentID = ""; OrderOpeningText = ""; OrderClosingText = ""; Customer = new Biller.Core.Customers.Customer(); Date = DateTime.Now;
+            DocumentID = ""; OrderOpeningText = ""; OrderClosingText = ""; Customer = new Biller.Core.Customers.Customer();
+            Date = DateTime.Now; DateOfDelivery = DateTime.Now;
             OrderRebate = new Biller.Core.Utils.Percentage();
             OrderShipment = new Biller.Core.Utils.Shipment();
             PaymentMethode = new Biller.Core.Utils.PaymentMethode();
