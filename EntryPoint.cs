@@ -33,14 +33,6 @@ namespace OrderTypes_Biller
 
         public void Activate()
         {
-            //await Task.Run(() =>
-            //{
-            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
-            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
-            //    ParentViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
-            //});
-            
-
             var vm = new Export.Settings.ViewModel(this);
             //vm.LoadData();
 
@@ -49,8 +41,6 @@ namespace OrderTypes_Biller
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
 
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
-
-            
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()

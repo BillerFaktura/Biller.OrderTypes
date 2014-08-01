@@ -198,8 +198,9 @@ namespace OrderTypes_Biller.Export.Settings
                 RelativeImagePath = "";
                 AbsoluteImagePath = "";
             }
-            RelativeImagePath = MakeRelativePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value);
-            AbsoluteImagePath = MakeAbsolutePath((Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), ""), value);
+            var path = (Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), "");
+            RelativeImagePath = MakeRelativePath(path, value);
+            AbsoluteImagePath = MakeAbsolutePath(path, value);
         }
     }
 }
