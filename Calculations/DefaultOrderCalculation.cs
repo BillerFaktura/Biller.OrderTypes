@@ -79,21 +79,15 @@ namespace OrderTypes_Biller.Calculations
 
                 // taxclass listing
                 if (TaxValues.Any(x => x.TaxClass.Name == article.TaxClass.Name))
-                {
                     TaxValues.Single(x => x.TaxClass.Name == article.TaxClass.Name).Value += article.ExactVAT;
-                }
                 else
-                {
                     TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(article.ExactVAT), TaxClass = article.TaxClass });
-                }
             }
 
             //NetArticleSummary
             NetArticleSummary.Amount = ArticleSummary.Amount;
             foreach (var item in TaxValues)
-            {
                 NetArticleSummary.Amount -= item.Value.Amount;
-            }
 
             OrderSummary.Amount = ArticleSummary.Amount;
             NetOrderSummary.Amount = NetArticleSummary.Amount;
@@ -110,9 +104,7 @@ namespace OrderTypes_Biller.Calculations
                     item.Value = item.Value * (1 - _parentOrder.OrderRebate.Amount);
             }
             else
-            {
                 OrderRebate = new EMoney(0);
-            }
 
             // Shipping
             if (!String.IsNullOrEmpty(_parentOrder.OrderShipment.Name))
@@ -122,8 +114,11 @@ namespace OrderTypes_Biller.Calculations
                 // Austria: Shipping has reduced taxes
                 // CH: 
                 OrderSummary.Amount += _parentOrder.OrderShipment.DefaultPrice.Amount;
-                var keyValueStore = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
-                if ((bool)keyValueStore.GetByKey("UseGermanSupplementaryTaxRegulation").Value)
+                dynamic keyValueStore = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+                var UseGermanSupplementaryTaxRegulation = keyValueStore.UseGermanSupplementaryTaxRegulation;
+                if (UseGermanSupplementaryTaxRegulation == null)
+                    UseGermanSupplementaryTaxRegulation = false;
+                if (UseGermanSupplementaryTaxRegulation)
                 {
                     var wholetax = 0.0;
                     var wholeShipmentTax = 0.0;
@@ -138,31 +133,38 @@ namespace OrderTypes_Biller.Calculations
                         shipment.TaxClass = taxitem.TaxClass;
                         shipment.OrderedAmount = 1;
                         shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
-                        if ((bool)keyValueStore.GetByKey("TaxSupplementaryWorkSeperate").Value)
-                        {
-                            temporaryTaxes.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(ratio * shipment.ExactVAT), TaxClass = taxitem.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
-                        }
+
+                        var TaxSupplementaryWorkSeparate = keyValueStore.TaxSupplementaryWorkSeperate;
+                        if (TaxSupplementaryWorkSeparate == null)
+                            TaxSupplementaryWorkSeparate = false;
+
+                        if (TaxSupplementaryWorkSeparate)
+                            temporaryTaxes.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(ratio * shipment.ExactVAT), TaxClass = taxitem.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
                         else
-                        {
                             taxitem.Value += (ratio * shipment.ExactVAT);
-                        }
                         wholeShipmentTax += ratio * shipment.ExactVAT;
                     }
                     NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - wholeShipmentTax;
                     NetOrderSummary.Amount += NetShipment.Amount;
 
                     foreach (Biller.Core.Models.TaxClassMoneyModel temporaryTax in temporaryTaxes)
-                    {
                         TaxValues.Add(temporaryTax);
-                    }
                 }
                 else
                 {
                     var shipment = new OrderedArticle(new Article());
-                    shipment.TaxClass = (TaxClass)keyValueStore.GetByKey("ShipmentTaxClass").Value;
-                    shipment.OrderedAmount = 1;
-                    shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
-                    TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = (string)keyValueStore.GetByKey("LocalizedOnSupplementaryWork").Value });
+                    try
+                    {
+                        shipment.TaxClass = (TaxClass)keyValueStore.ShipmentTaxClass;
+                        shipment.OrderedAmount = 1;
+                        shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
+                    }
+                    catch
+                    {
+                        Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Fehler bei Berechnung des Betrages", "Es wurde keine Steuerklasse für Nebenleistungen angegeben. Überprüfen Sie die Einstellungen.");
+                        return;
+                    }
+                    TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
                     NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - shipment.ExactVAT;
                     NetOrderSummary.Amount += NetShipment.Amount;
                 }
@@ -170,14 +172,9 @@ namespace OrderTypes_Biller.Calculations
 
             // Skonto
             if (_parentOrder.PaymentMethode.Discount.Amount > 0)
-            {
                 CashBack = new EMoney(_parentOrder.PaymentMethode.Discount.Amount * ArticleSummary.Amount);
-            }
             else
-            {
                 CashBack = new EMoney(0);
-            }
-
             
             RaiseUpdateManually("ArticleSummary");
             RaiseUpdateManually("TaxValues");
