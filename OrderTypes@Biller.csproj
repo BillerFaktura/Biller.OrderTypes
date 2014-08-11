@@ -98,6 +98,37 @@
   <ItemGroup>
     <Compile Include="Calculations\DefaultOrderCalculation.cs" />
     <Compile Include="Calculations\EUInternationalCalculation.cs" />
+    <Compile Include="Calculations\SmallBusinessCalculation.cs" />
+    <Compile Include="Controls\EditTabs\Articles\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Articles\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Others\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Others\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\PrintPreview\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\PrintPreview\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Receipent\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Receipent\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Settings\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Settings\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Docket\Docket.cs" />
     <Compile Include="Docket\DocketButton.xaml.cs">
       <DependentUpon>DocketButton.xaml</DependentUpon>
@@ -144,6 +175,46 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\EditTabs\Articles\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Articles\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Others\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Others\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\PrintPreview\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\PrintPreview\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Receipent\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Receipent\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Settings\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Settings\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Docket\DocketButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

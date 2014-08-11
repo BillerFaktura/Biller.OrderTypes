@@ -45,11 +45,22 @@ namespace OrderTypes_Biller.Invoice
                 {
                     (document as Invoice).PaymentMethode.ParseFromXElement(data.Element((document as Invoice).PaymentMethode.XElementName));
                     (document as Invoice).OrderShipment.ParseFromXElement(data.Element((document as Invoice).OrderShipment.XElementName));
-                }
-                catch (Exception e)
-                { }
-
-                var money = new Biller.Core.Utils.Money(0);
+                } catch { }
+                try
+                {
+                    (document as Invoice).SmallBusiness = Boolean.Parse(data.Element("SmallBusiness").Value);
+                    if ((document as Invoice).SmallBusiness)
+                        (document as Invoice).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order);
+                    else if (!((document as Invoice).OrderCalculation is Calculations.DefaultOrderCalculation))
+                        (document as Invoice).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order);
+                } catch { }
+                try
+                {
+                    if (data.Element("EAddress") != null)
+                    {
+                        (document as Invoice).DeliveryAddress.ParseFromXElement(data.Element("EAddress"));
+                    }       
+                } catch {}
             }
             else
             {

@@ -34,12 +34,8 @@ namespace OrderTypes_Biller
         public void Activate()
         {
             var vm = new Export.Settings.ViewModel(this);
-            //vm.LoadData();
-
             internalViewModels.Add(vm);
-
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
-
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
         }
 

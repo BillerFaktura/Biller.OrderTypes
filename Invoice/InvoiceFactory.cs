@@ -20,11 +20,11 @@ namespace OrderTypes_Biller.Invoice
         public List<UIElement> GetEditContentTabs()
         {
             var list = new List<UIElement>();
-            list.Add(new Biller.UI.DocumentView.Contextual.EditTabs.Settings.EditTab());
-            list.Add(new Biller.UI.DocumentView.Contextual.EditTabs.Receipent.EditTab());
-            list.Add(new Biller.UI.DocumentView.Contextual.EditTabs.Articles.EditTab());
-            list.Add(new Biller.UI.DocumentView.Contextual.EditTabs.Others.EditTab());
-            list.Add(new Biller.UI.DocumentView.Contextual.EditTabs.PrintPreview.EditTab());
+            list.Add(new Controls.Settings.EditTab());
+            list.Add(new Controls.Receipent.EditTab());
+            list.Add(new Controls.Articles.EditTab());
+            list.Add(new Controls.Others.EditTab());
+            list.Add(new Controls.PrintPreview.EditTab());
             return list;
         }
 

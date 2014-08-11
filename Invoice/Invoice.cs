@@ -17,6 +17,7 @@ namespace OrderTypes_Biller.Invoice
         public Invoice()
             : base()
         {
+            DeliveryAddress = new Biller.Core.Utils.EAddress();
         }
 
         public override string DocumentType
@@ -66,7 +67,7 @@ namespace OrderTypes_Biller.Invoice
                 new XElement("PreviewValue", OrderCalculation.OrderSummary.GetXElement()), new XElement("PreviewCustomer", Customer.DisplayName), OrderShipment.GetXElement(), PaymentMethode.GetXElement());
             if (DeliveryAddress != null)
                 element.Add(DeliveryAddress.GetXElement());
-
+            element.Add(new XElement("SmallBusiness", SmallBusiness));
             return element;
         }
 

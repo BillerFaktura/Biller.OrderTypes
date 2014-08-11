@@ -25,7 +25,11 @@ namespace OrderTypes_Biller.Order
             OrderRebate = new Biller.Core.Utils.Percentage();
             OrderShipment = new Biller.Core.Utils.Shipment();
             PaymentMethode = new Biller.Core.Utils.PaymentMethode();
-            OrderCalculation = new DefaultOrderCalculation(this);
+            dynamic sb = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+            if (sb.IsSmallBusiness)
+                OrderCalculation = new SmallBusinessCalculation(this);
+            else
+                OrderCalculation = new DefaultOrderCalculation(this);
         }
 
         /// <summary>
@@ -88,6 +92,12 @@ namespace OrderTypes_Biller.Order
         public virtual DateTime DateOfDelivery
         {
             get { return GetValue(() => DateOfDelivery); }
+            set { SetValue(value); }
+        }
+
+        public virtual bool SmallBusiness
+        {
+            get { return GetValue(() => SmallBusiness); }
             set { SetValue(value); }
         }
 
