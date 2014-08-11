@@ -10,10 +10,12 @@ namespace OrderTypes_Biller.Calculations
 {
     public class SmallBusinessCalculation : DefaultOrderCalculation
     {
-        public SmallBusinessCalculation(Order.Order order)
+        public SmallBusinessCalculation(Order.Order order, bool calculate = false)
             : base(order)
         {
             _parentOrder = order;
+            if (calculate)
+                CalculateValues();
         }
 
         Order.Order _parentOrder;
@@ -64,7 +66,7 @@ namespace OrderTypes_Biller.Calculations
                 // Austria: Shipping has reduced taxes
                 // CH: 
                 OrderSummary.Amount += _parentOrder.OrderShipment.DefaultPrice.Amount;
-                dynamic keyValueStore = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+                //dynamic keyValueStore = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
                 //var UseGermanSupplementaryTaxRegulation = keyValueStore.UseGermanSupplementaryTaxRegulation;
                 //if (UseGermanSupplementaryTaxRegulation == null)
                 //    UseGermanSupplementaryTaxRegulation = false;
@@ -102,21 +104,21 @@ namespace OrderTypes_Biller.Calculations
                 //}
                 //else
                 //{
-                    var shipment = new OrderedArticle(new Article());
-                    try
-                    {
-                        shipment.TaxClass = (TaxClass)keyValueStore.ShipmentTaxClass;
-                        shipment.OrderedAmount = 1;
-                        shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
-                    }
-                    catch
-                    {
-                        Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Fehler bei Berechnung des Betrages", "Es wurde keine Steuerklasse für Nebenleistungen angegeben. Überprüfen Sie die Einstellungen.");
-                        return;
-                    }
-                    TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
-                    //NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - shipment.ExactVAT;
-                    //NetOrderSummary.Amount += NetShipment.Amount;
+                    //var shipment = new OrderedArticle(new Article());
+                    //try
+                    //{
+                    //    //shipment.TaxClass = (TaxClass)keyValueStore.ShipmentTaxClass;
+                    //    shipment.OrderedAmount = 1;
+                    //    shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
+                    //}
+                    //catch
+                    //{
+                    //    Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Fehler bei Berechnung des Betrages", "Es wurde keine Steuerklasse für Nebenleistungen angegeben. Überprüfen Sie die Einstellungen.");
+                    //    return;
+                    //}
+                    //TaxValues.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = shipment.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
+                    NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount;
+                    //OrderSummary.Amount += NetShipment.Amount;
                 //}
             }
 

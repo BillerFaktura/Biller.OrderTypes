@@ -268,7 +268,7 @@ namespace OrderTypes_Biller.Export
 
             if (ParentViewModel.SettingsController.ArticleListColumns.Count == 0)
             {
-                //ToDo: Throw an Exception
+                //ToDo: Show a notification
                 return;
             }
             var row = table.AddRow();
@@ -317,19 +317,40 @@ namespace OrderTypes_Biller.Export
 
             logger.Trace("Adding subtotal net");
             var lastcolumn = ParentViewModel.SettingsController.ArticleListColumns.Count - 1;
-            // Add the total price row
-            row = table.AddRow();
-            row.Format.PageBreakBefore = true;
-            row.Cells[0].AddParagraph("Zwischensumme Netto");
-            row.Cells[0].Format.Font.Bold = true;
-            row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-            row.Cells[0].MergeRight = lastcolumn - 1;
-            row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetArticleSummary.AmountString);
-            row.Format.SpaceBefore = "0,1cm";
-            row.Cells[0].Borders.Bottom = NoBorder.Clone();
-            row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
-            row.Cells[0].Borders.Top = NoBorder.Clone();
-            row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
+
+            dynamic sb = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+            if (sb.IsSmallBusiness)
+            {
+                // Add the total price row
+                row = table.AddRow();
+                row.Format.PageBreakBefore = true;
+                row.Cells[0].AddParagraph("Zwischensumme");
+                row.Cells[0].Format.Font.Bold = true;
+                row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.ArticleSummary.AmountString);
+                row.Format.SpaceBefore = "0,1cm";
+                row.Cells[0].Borders.Bottom = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
+                row.Cells[0].Borders.Top = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
+            }
+            else
+            {
+                // Add the total price row
+                row = table.AddRow();
+                row.Format.PageBreakBefore = true;
+                row.Cells[0].AddParagraph("Zwischensumme Netto");
+                row.Cells[0].Format.Font.Bold = true;
+                row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
+                row.Cells[0].MergeRight = lastcolumn - 1;
+                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetArticleSummary.AmountString);
+                row.Format.SpaceBefore = "0,1cm";
+                row.Cells[0].Borders.Bottom = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
+                row.Cells[0].Borders.Top = NoBorder.Clone();
+                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
+            }
 
             if (order.OrderCalculation.OrderRebate.Amount > 0)
             {
@@ -338,7 +359,10 @@ namespace OrderTypes_Biller.Export
                 row.Cells[0].AddParagraph("Abzgl. " + order.OrderRebate.PercentageString + " Gesamtrabatt");
                 row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
                 row.Cells[0].MergeRight = lastcolumn - 1;
-                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderRebate.AmountString);
+                if (sb.IsSmallBusiness)
+                    row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.OrderRebate.AmountString);
+                else
+                    row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderRebate.AmountString);
                 row.Format.SpaceBefore = "0,1cm";
                 row.Cells[0].Borders.Bottom = NoBorder.Clone();
                 row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
@@ -361,35 +385,38 @@ namespace OrderTypes_Biller.Export
                 row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
             }
 
-            if (order.OrderCalculation.OrderRebate.Amount > 0 || !String.IsNullOrEmpty(order.OrderShipment.Name))
+            if (!sb.IsSmallBusiness)
             {
-                logger.Trace("Adding Subtotal");
-                row = table.AddRow();
-                row.Cells[0].AddParagraph("Zwischensumme Netto");
-                row.Cells[0].Format.Font.Bold = true;
-                row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = lastcolumn - 1;
-                row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderSummary.AmountString);
-                row.Format.SpaceBefore = "0,1cm";
-                row.Cells[0].Borders.Bottom = NoBorder.Clone();
-                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
-                row.Cells[0].Borders.Top = BlackBorder.Clone();
-                row.Cells[lastcolumn].Borders.Top = BlackBorder.Clone();
-            }
+                if (order.OrderCalculation.OrderRebate.Amount > 0 || !String.IsNullOrEmpty(order.OrderShipment.Name))
+                {
+                    logger.Trace("Adding Subtotal");
+                    row = table.AddRow();
+                    row.Cells[0].AddParagraph("Zwischensumme Netto");
+                    row.Cells[0].Format.Font.Bold = true;
+                    row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
+                    row.Cells[0].MergeRight = lastcolumn - 1;
+                    row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.NetOrderSummary.AmountString);
+                    row.Format.SpaceBefore = "0,1cm";
+                    row.Cells[0].Borders.Bottom = NoBorder.Clone();
+                    row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
+                    row.Cells[0].Borders.Top = BlackBorder.Clone();
+                    row.Cells[lastcolumn].Borders.Top = BlackBorder.Clone();
+                }
 
-            // Add the VAT row
-            foreach (var tax in order.OrderCalculation.TaxValues)
-            {
-                logger.Trace("Adding Tax - " + tax.TaxClass.Name);
-                row = table.AddRow();
-                row.Cells[0].AddParagraph("Zzgl. " + tax.TaxClass.Name + " " + tax.TaxClassAddition);
-                row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
-                row.Cells[0].MergeRight = lastcolumn - 1;
-                row.Cells[lastcolumn].AddParagraph(tax.Value.AmountString);
-                row.Cells[0].Borders.Bottom = NoBorder.Clone();
-                row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
-                row.Cells[0].Borders.Top = NoBorder.Clone();
-                row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
+                // Add the VAT row
+                foreach (var tax in order.OrderCalculation.TaxValues)
+                {
+                    logger.Trace("Adding Tax - " + tax.TaxClass.Name);
+                    row = table.AddRow();
+                    row.Cells[0].AddParagraph("Zzgl. " + tax.TaxClass.Name + " " + tax.TaxClassAddition);
+                    row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
+                    row.Cells[0].MergeRight = lastcolumn - 1;
+                    row.Cells[lastcolumn].AddParagraph(tax.Value.AmountString);
+                    row.Cells[0].Borders.Bottom = NoBorder.Clone();
+                    row.Cells[lastcolumn].Borders.Bottom = NoBorder.Clone();
+                    row.Cells[0].Borders.Top = NoBorder.Clone();
+                    row.Cells[lastcolumn].Borders.Top = NoBorder.Clone();
+                }
             }
 
             logger.Trace("Adding subtotal gross");

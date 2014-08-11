@@ -50,9 +50,9 @@ namespace OrderTypes_Biller.Invoice
                 {
                     (document as Invoice).SmallBusiness = Boolean.Parse(data.Element("SmallBusiness").Value);
                     if ((document as Invoice).SmallBusiness)
-                        (document as Invoice).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order);
+                        (document as Invoice).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order, true);
                     else if (!((document as Invoice).OrderCalculation is Calculations.DefaultOrderCalculation))
-                        (document as Invoice).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order);
+                        (document as Invoice).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order, true);
                 } catch { }
                 try
                 {

@@ -20,7 +20,7 @@ namespace OrderTypes_Biller.Calculations
         /// Default constructor for <see cref="DefaultOrderCalculation"/>.
         /// </summary>
         /// <param name="parentOrder">The calculations are based on the <see cref="Order"/> passed with the constructor.</param>
-        public DefaultOrderCalculation(Order.Order parentOrder)
+        public DefaultOrderCalculation(Order.Order parentOrder, bool calculate = false)
         {
             _parentOrder = parentOrder;
             ArticleSummary = new EMoney(0, true);
@@ -36,6 +36,9 @@ namespace OrderTypes_Biller.Calculations
             parentOrder.PaymentMethode.PropertyChanged += article_PropertyChanged;
             parentOrder.OrderShipment.PropertyChanged += article_PropertyChanged;
             parentOrder.PropertyChanged += parentOrder_PropertyChanged;
+
+            if (calculate)
+                CalculateValues();
         }
 
         void parentOrder_PropertyChanged(object sender, PropertyChangedEventArgs e)
