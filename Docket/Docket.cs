@@ -62,7 +62,7 @@ namespace OrderTypes_Biller.Docket
                 new XElement("PreviewValue", OrderCalculation.OrderSummary.GetXElement()), new XElement("PreviewCustomer", Customer.DisplayName), OrderShipment.GetXElement(), PaymentMethode.GetXElement());
             if (DeliveryAddress != null)
                 element.Add(DeliveryAddress.GetXElement());
-
+            element.Add(new XElement("SmallBusiness", SmallBusiness));
             return element;
         }
 

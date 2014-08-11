@@ -214,7 +214,7 @@
                 </TextBlock>
             </StackPanel>
             <StackPanel Grid.Column="2">
-                <TextBlock Style="{StaticResource ContentStyle}">
+                <TextBlock Style="{StaticResource ContentStyle}" Visibility="{Binding Document.SmallBusiness, Converter={StaticResource InvertAndVisibilitate}}">
                     <TextBlock Text="Artikelsumme Netto:" />
                     <TextBlock Text="{Binding Document.OrderCalculation.NetArticleSummary}" HorizontalAlignment="Right" />
                 </TextBlock>

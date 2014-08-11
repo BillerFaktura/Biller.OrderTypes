@@ -48,7 +48,7 @@ namespace OrderTypes_Biller.Controls.Articles
                 }
                 catch(Exception ex)
                 {
-
+                    
                 }
             }
         }

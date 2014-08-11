@@ -26,6 +26,7 @@ namespace OrderTypes_Biller.Order
             OrderShipment = new Biller.Core.Utils.Shipment();
             PaymentMethode = new Biller.Core.Utils.PaymentMethode();
             dynamic sb = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+            SmallBusiness = sb.IsSmallBusiness;
             if (sb.IsSmallBusiness)
                 OrderCalculation = new SmallBusinessCalculation(this);
             else
