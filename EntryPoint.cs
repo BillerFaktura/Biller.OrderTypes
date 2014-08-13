@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,6 +39,7 @@ namespace OrderTypes_Biller
             internalViewModels.Add(vm);
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
+            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = "Auftragsdokumente", Description = "Stellt die Auftragsdokumente Rechnung, Lieferschein und Angebot bereit", GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140813, UpdateSource = "https://raw.githubusercontent.com/LastElb/BillerV2/master/update.json" });
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()
