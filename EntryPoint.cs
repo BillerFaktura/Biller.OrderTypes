@@ -37,6 +37,9 @@ namespace OrderTypes_Biller
         {
             var vm = new Export.Settings.ViewModel(this);
             internalViewModels.Add(vm);
+
+            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Invoice.InvoiceFactory());
+            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Docket.DocketFactory());
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
             ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = "Auftragsdokumente", Description = "Stellt die Auftragsdokumente Rechnung, Lieferschein und Angebot bereit", GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140813, UpdateSource = "https://raw.githubusercontent.com/LastElb/BillerV2/master/update.json" });
