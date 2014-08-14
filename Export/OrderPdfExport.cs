@@ -587,6 +587,11 @@ namespace OrderTypes_Biller.Export
 
         private string ReplaceFooterPlaceHolder(string placeholder, Biller.Core.Models.CompanySettings companySettings)
         {
+            if (String.IsNullOrEmpty(placeholder))
+                return String.Empty;
+            if (companySettings == null)
+                return String.Empty;
+
             if (placeholder.Contains("{CompanyAddress}"))
             {
                 var address = "";
