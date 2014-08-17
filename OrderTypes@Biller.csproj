@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OrderTypes_Biller</RootNamespace>
     <AssemblyName>OrderTypes%40Biller</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
@@ -52,7 +52,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Fluent">
-      <HintPath>..\Biller.Data\bin\Debug\Fluent.dll</HintPath>
+      <HintPath>..\Assemblies\Fluent\NET 4.5\Release\Fluent.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro">
+      <HintPath>..\packages\MahApps.Metro.0.13.1.0\lib\net45\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="MigraDoc.DocumentObjectModel-WPF, Version=1.32.3885.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -69,9 +72,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="NLog, Version=2.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
+    <Reference Include="NLog, Version=3.1.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\NLog.2.1.0\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
     </Reference>
     <Reference Include="PdfSharp-WPF, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -87,6 +90,9 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.0.13.1.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -98,6 +104,37 @@
   <ItemGroup>
     <Compile Include="Calculations\DefaultOrderCalculation.cs" />
     <Compile Include="Calculations\EUInternationalCalculation.cs" />
+    <Compile Include="Calculations\SmallBusinessCalculation.cs" />
+    <Compile Include="Controls\EditTabs\Articles\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Articles\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Others\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Others\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\PrintPreview\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\PrintPreview\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Receipent\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Receipent\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Settings\Content.xaml.cs">
+      <DependentUpon>Content.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTabs\Settings\EditTab.xaml.cs">
+      <DependentUpon>EditTab.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Docket\Docket.cs" />
     <Compile Include="Docket\DocketButton.xaml.cs">
       <DependentUpon>DocketButton.xaml</DependentUpon>
@@ -126,6 +163,12 @@
     <Compile Include="Invoice\InvoiceParser.cs" />
     <Compile Include="Models\ArticleListColumnModel.cs" />
     <Compile Include="Models\FooterColumnModel.cs" />
+    <Compile Include="Offer\Button.xaml.cs">
+      <DependentUpon>Button.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Offer\Offer.cs" />
+    <Compile Include="Offer\OfferFactory.cs" />
+    <Compile Include="Offer\OfferParser.cs" />
     <Compile Include="Order\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -144,6 +187,46 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Controls\EditTabs\Articles\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Articles\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Others\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Others\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\PrintPreview\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\PrintPreview\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Receipent\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Receipent\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Settings\Content.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Controls\EditTabs\Settings\EditTab.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Docket\DocketButton.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -161,6 +244,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Invoice\Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Offer\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

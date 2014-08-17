@@ -5,8 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:Biller.Controls;assembly=Biller.Controls"
              xmlns:converter="clr-namespace:Biller.Core.Converters;assembly=Biller.Core"
+             xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="700" Margin="12">
+             d:DesignHeight="600" d:DesignWidth="700" Margin="12" DataContextChanged="UserControl_DataContextChanged" Loaded="UserControl_Loaded">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -53,7 +54,7 @@
             <Grid Name="GridSpan6Margin" Grid.ColumnSpan="6" Margin="0,0,1,0"/>
             <Grid Name="GridSpan7Margin" Grid.ColumnSpan="7" Margin="0,0,1,0"/>
         </Grid>
-        
+
         <!--controls:AnimatedScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <Button Content="Add Text" Click="Button_Click"/>
@@ -101,114 +102,131 @@
                 <controls:WatermarkTextBox Text="{Binding SelectedElement.(Height)}"/>
             </StackPanel>
         </StackPanel>-->
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <TextBlock Style="{DynamicResource HeaderStyle}" Text="Layouteinstellungen"/>
-                <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Kopfzeile" />
-                <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Firmenlogo &amp; Briefpapier"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Bild- oder Dokumentpfad" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                    <controls:WatermarkTextBox Watermark="Doppelt klicken zum Ändern" Text="{Binding SettingsController.DisplayedPath}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13" MouseDoubleClick="WatermarkTextBox_MouseDoubleClick"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Horizontale Ausrichtung" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                    <ComboBox SelectedIndex="{Binding SettingsController.PositionLeft}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200">
-                        <ComboBoxItem Content="Links"/>
-                        <ComboBoxItem Content="Zentriert"/>
-                        <ComboBoxItem Content="Rechts"/>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Horizontaler Bezugspunkt" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                    <ComboBox SelectedIndex="{Binding SettingsController.RelativeHorizontal}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200">
-                        <ComboBoxItem Content="Seitenabstand"/>
-                        <ComboBoxItem Content="Seitenrand"/>
-                    </ComboBox>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Vertikaler Bezugspunkt" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                    <ComboBox SelectedIndex="{Binding SettingsController.RelativeVertical}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200">
-                        <ComboBoxItem Content="Seitenabstand"/>
-                        <ComboBoxItem Content="Seitenrand"/>
-                    </ComboBox>
-                </StackPanel>
-                
-                <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Kundenadresse"/>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Abstand zum Seitenanfang" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
-                    <controls:WatermarkTextBox Watermark="" Text="{Binding SettingsController.AddressFrameTop, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
-                </StackPanel>
-                <CheckBox Content="Absenderadresse anzeigen" FontSize="13" IsChecked="{Binding SettingsController.AddressFrameShowSender}"/>
-                
-                <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Auftragsdaten"/>
-                <CheckBox Content="Kundennummer anzeigen" FontSize="13" IsChecked="{Binding SettingsController.OrderInfoShowCustomerID}"/>
-                <CheckBox Content="Seitenzahl anzeigen" FontSize="13" IsChecked="{Binding SettingsController.OrderInfoShowPageNumbers}"/>
-
-                <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Artikelliste"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*" MaxWidth="100"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Margin="0,5,0,0">
-                        <ItemsControl ItemsSource="{Binding SettingsController.ArticleListColumns}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">
-                                        <TextBox Text="{Binding Header}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
-                                        <ComboBox SelectedItem="{Binding Content}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.AllowedArticleDataFields}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
-                                        <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
-                                            <ComboBoxItem Content="Links"/>
-                                            <ComboBoxItem Content="Zentriert"/>
-                                            <ComboBoxItem Content="Rechts"/>
-                                        </ComboBox>
-                                        <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,5,0,0">
-                        <controls:Office2013Button Content="Nach oben" Click="Button_Click_4" FontSize="12"/>
-                        <controls:Office2013Button Content="Nach unten" Click="Button_Click_3" FontSize="12"/>
-
-                        <controls:Office2013Button Content="Hinzufügen" Click="Button_Click_1" FontSize="12"/>
-                        <controls:Office2013Button Content="Entfernen" Click="Button_Click_2" FontSize="12"/>
-                    </StackPanel>
-                </Grid>
-
-                <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Fußzeile"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*" />
-                        <ColumnDefinition Width="*" MaxWidth="100"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Margin="0,5,0,0">
-                        <ItemsControl ItemsSource="{Binding SettingsController.FooterColumns}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" GotFocus="SP_FooterColumns_GotFocus" LostFocus="SP_FooterColumns_LostFocus">
-                                        <TextBox Text="{Binding Value}" Width="{Binding ElementName=GridSpan4Margin, Path=ActualWidth}" Margin="1" FontSize="13" AcceptsReturn="True"/>
-                                        <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
-                                            <ComboBoxItem Content="Links"/>
-                                            <ComboBoxItem Content="Zentriert"/>
-                                            <ComboBoxItem Content="Rechts"/>
-                                        </ComboBox>
-                                        <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" Margin="0,5,0,0">
-                        <controls:Office2013Button Content="Nach oben" Click="ButtonMoveFooterColumnUp" FontSize="12"/>
-                        <controls:Office2013Button Content="Nach unten" Click="ButtonMoveFooterColumnDown" FontSize="12"/>
-
-                        <controls:Office2013Button Content="Spalte hinzufügen" Click="ButtonAddFooterColumn" FontSize="12"/>
-                        <controls:Office2013Button Content="Spalte entfernen" Click="ButtonRemoveFooterColumn" FontSize="12"/>
-                    </StackPanel>
-                </Grid>
+        <StackPanel>
+            <TextBlock Style="{DynamicResource HeaderStyle}" Text="Layouteinstellungen"/>
+            <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Kopfzeile" />
+            <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Firmenlogo &amp; Briefpapier"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Bild- oder Dokumentpfad" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <controls:WatermarkTextBox Watermark="Doppelt klicken zum Ändern" Text="{Binding SettingsController.DisplayedPath}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13" MouseDoubleClick="WatermarkTextBox_MouseDoubleClick"/>
             </StackPanel>
-        </ScrollViewer>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Horizontale Ausrichtung" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <ComboBox SelectedIndex="{Binding SettingsController.ImagePositionLeftIndex, FallbackValue=-1}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" TextBoxBase.LostFocus="ComboBox_LostFocus" MinWidth="200" IsEditable="True" Margin="1" Height="25" Name="ComboBoxImagePositionLeft">
+                    <ComboBoxItem Content="Links"/>
+                    <ComboBoxItem Content="Zentriert"/>
+                    <ComboBoxItem Content="Rechts"/>
+                    <ComboBoxItem Content="Eigenen Abstand zum linken Bezugspunkt eingeben"/>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Vertikale Ausrichtung" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <controls:WatermarkTextBox Watermark="" Text="{Binding SettingsController.ImagePositionTop, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Horizontaler Bezugspunkt" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <ComboBox SelectedIndex="{Binding SettingsController.RelativeHorizontal}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" Margin="1" Height="25">
+                    <ComboBoxItem Content="Seitenabstand"/>
+                    <ComboBoxItem Content="Seitenrand"/>
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Vertikaler Bezugspunkt" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <ComboBox SelectedIndex="{Binding SettingsController.RelativeVertical}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" Margin="1" Height="25">
+                    <ComboBoxItem Content="Seitenabstand"/>
+                    <ComboBoxItem Content="Seitenrand"/>
+                </ComboBox>
+            </StackPanel>
+
+            <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Kundenadresse" Margin="0,5,0,2.5"/>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Abstand zum Seitenanfang" Style="{DynamicResource ContentStyle}" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200"/>
+                <controls:WatermarkTextBox Watermark="" Text="{Binding SettingsController.AddressFrameTop, Converter={StaticResource cmConverter}}" SelectTextBeforeSpace="True" Width="{Binding ElementName=GridSpan5Margin, Path=ActualWidth}" MinWidth="200" FontSize="13"/>
+            </StackPanel>
+            <CheckBox Content="Absenderadresse anzeigen" FontSize="13" IsChecked="{Binding SettingsController.AddressFrameShowSender}"/>
+
+            <TextBlock Style="{DynamicResource SectionSubHeaderStyle}" Text="Auftragsdaten" Margin="0,5,0,2.5"/>
+            <CheckBox Content="Kundennummer anzeigen" FontSize="13" IsChecked="{Binding SettingsController.OrderInfoShowCustomerID}"/>
+            <CheckBox Content="Seitenzahl anzeigen" FontSize="13" IsChecked="{Binding SettingsController.OrderInfoShowPageNumbers}"/>
+
+            <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Artikelliste"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" MaxWidth="100"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TabControl SelectionChanged="TabControl_SelectionChanged">
+                        <TabControl.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+                                </ResourceDictionary.MergedDictionaries>
+                            </ResourceDictionary>
+                        </TabControl.Resources>
+                        <TabItem Header="Rechnung" metro:ControlsHelper.HeaderFontSize="16" />
+                        <TabItem Header="Angebot" metro:ControlsHelper.HeaderFontSize="16" />
+                        <TabItem Header="Lieferschein" metro:ControlsHelper.HeaderFontSize="16" />
+                    </TabControl>
+                    <ItemsControl ItemsSource="{Binding SettingsController.ArticleListColumns}" Name="ArticleColumnPresenter">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">
+                                    <TextBox Text="{Binding Header}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
+                                    <ComboBox SelectedItem="{Binding Content}" ItemsSource="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ItemsControl}}, Path=DataContext.AllowedArticleDataFields}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13"/>
+                                    <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
+                                        <ComboBoxItem Content="Links"/>
+                                        <ComboBoxItem Content="Zentriert"/>
+                                        <ComboBoxItem Content="Rechts"/>
+                                    </ComboBox>
+                                    <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel Grid.Column="1">
+                    <controls:Office2013Button Content="Nach oben" Click="Button_Click_4" FontSize="12"/>
+                    <controls:Office2013Button Content="Nach unten" Click="Button_Click_3" FontSize="12"/>
+
+                    <controls:Office2013Button Content="Hinzufügen" Click="Button_Click_1" FontSize="12"/>
+                    <controls:Office2013Button Content="Entfernen" Click="Button_Click_2" FontSize="12"/>
+                </StackPanel>
+            </Grid>
+
+            <TextBlock Style="{DynamicResource SectionHeaderStyle}" Text="Fußzeile"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="*" MaxWidth="100"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Margin="0,5,0,0">
+                    <ItemsControl ItemsSource="{Binding SettingsController.FooterColumns}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" GotFocus="SP_FooterColumns_GotFocus" LostFocus="SP_FooterColumns_LostFocus">
+                                    <TextBox Text="{Binding Value}" Width="{Binding ElementName=GridSpan4Margin, Path=ActualWidth}" Margin="1" FontSize="13" AcceptsReturn="True"/>
+                                    <ComboBox SelectedIndex="{Binding AlignmentIndex}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13">
+                                        <ComboBoxItem Content="Links"/>
+                                        <ComboBoxItem Content="Zentriert"/>
+                                        <ComboBoxItem Content="Rechts"/>
+                                    </ComboBox>
+                                    <controls:WatermarkTextBox Text="{Binding ColumnWidth, Converter={StaticResource cmConverter}}" Width="{Binding ElementName=GridSpan2Margin, Path=ActualWidth}" Margin="1" FontSize="13" SelectTextBeforeSpace="True" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="0,5,0,0">
+                    <controls:Office2013Button Content="Nach oben" Click="ButtonMoveFooterColumnUp" FontSize="12"/>
+                    <controls:Office2013Button Content="Nach unten" Click="ButtonMoveFooterColumnDown" FontSize="12"/>
+
+                    <controls:Office2013Button Content="Spalte hinzufügen" Click="ButtonAddFooterColumn" FontSize="12"/>
+                    <controls:Office2013Button Content="Spalte entfernen" Click="ButtonRemoveFooterColumn" FontSize="12"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
     </Grid>
 </UserControl>

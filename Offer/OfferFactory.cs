@@ -1,22 +1,20 @@
-﻿using Biller.Core;
-using Biller;
-using Biller.Core.Document;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using System.Windows;
 
-namespace OrderTypes_Biller.Docket
+namespace OrderTypes_Biller.Offer
 {
-    public class DocketFactory : Biller.Core.Interfaces.DocumentFactory
+    public class OfferFactory : Biller.Core.Interfaces.DocumentFactory
     {
-        public string DocumentType { get { return "Docket"; } }
+        public string DocumentType { get { return "Offer"; } }
 
-        public Document GetNewDocument()
+        public Biller.Core.Document.Document GetNewDocument()
         {
-            return new Docket();
+            return new Offer();
         }
 
         public List<UIElement> GetEditContentTabs()
@@ -32,20 +30,25 @@ namespace OrderTypes_Biller.Docket
 
         public Fluent.Button GetCreationButton()
         {
-            return new DocketButton();
+            return new Button();
         }
 
 
         public string LocalizedDocumentType
         {
-            get
+            get 
             {
-                var docket = new Docket();
-                return docket.LocalizedDocumentType;
+                var invoice = new Offer();
+                return invoice.LocalizedDocumentType;
             }
         }
 
-        public void ReceiveData(object source, Document target)
+        /// <summary>
+        /// Works with the <see cref="source"/> when <see cref="target"/> is type of <see cref="Order"/>.
+        /// </summary>
+        /// <param name="source">When source is type of <see cref="Biller.Core.Customers.Customer"/> or <see cref="Biller.Core.Articles.Article"/> the data will be passed to the target <see cref="Order.Order"/>.</param>
+        /// <param name="target"><see cref="source"/> will be passed to <see cref="target"/> if it's type of <see cref="Order.Order"/>.</param>
+        public void ReceiveData(object source, Biller.Core.Document.Document target)
         {
             if (target is Order.Order)
             {
@@ -94,6 +97,7 @@ namespace OrderTypes_Biller.Docket
                 }
             }
         }
+
 
         public Biller.Core.Document.PreviewDocument GetPreviewDocument(Biller.Core.Document.Document source)
         {

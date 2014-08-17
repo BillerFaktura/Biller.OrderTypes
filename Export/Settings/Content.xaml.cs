@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Biller.Core.Converters;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,13 +45,15 @@ namespace OrderTypes_Biller.Export.Settings
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
             var viewModel = (DataContext as Export.Settings.ViewModel);
-            viewModel.SettingsController.ArticleListColumns.Add(new Models.ArticleListColumnModel());
+            ObservableCollection<Models.ArticleListColumnModel> list = ArticleColumnPresenter.ItemsSource as ObservableCollection<Models.ArticleListColumnModel>;
+            list.Add(new Models.ArticleListColumnModel());
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
             var viewModel = (DataContext as Export.Settings.ViewModel);
-            viewModel.SettingsController.ArticleListColumns.Remove(viewModel.SelectedArticleListColumn);
+            ObservableCollection<Models.ArticleListColumnModel> list = ArticleColumnPresenter.ItemsSource as ObservableCollection<Models.ArticleListColumnModel>;
+            list.Remove(viewModel.SelectedArticleListColumn);
         }
 
         /// <summary>
@@ -90,9 +94,13 @@ namespace OrderTypes_Biller.Export.Settings
         {
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
-            var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
-            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
-            viewModel.SettingsController.ArticleListColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.ArticleListColumns.Count), viewModel.SelectedArticleListColumn);
+            ObservableCollection<Models.ArticleListColumnModel> list = ArticleColumnPresenter.ItemsSource as ObservableCollection<Models.ArticleListColumnModel>;
+            var index = list.IndexOf(viewModel.SelectedArticleListColumn);
+            if (index >= 0)
+            {
+                list.RemoveAt(index);
+                list.Insert(Math.Min(index + 1, list.Count), viewModel.SelectedArticleListColumn);
+            }
         }
 
         /// <summary>
@@ -104,9 +112,40 @@ namespace OrderTypes_Biller.Export.Settings
         {
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
-            var index = viewModel.SettingsController.ArticleListColumns.IndexOf(viewModel.SelectedArticleListColumn);
-            viewModel.SettingsController.ArticleListColumns.RemoveAt(index);
-            viewModel.SettingsController.ArticleListColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
+            ObservableCollection<Models.ArticleListColumnModel> list = ArticleColumnPresenter.ItemsSource as ObservableCollection<Models.ArticleListColumnModel>;
+            var index = list.IndexOf(viewModel.SelectedArticleListColumn);
+            if (index >= 0)
+            {
+                list.RemoveAt(index);
+                list.Insert(Math.Max(index - 1, 0), viewModel.SelectedArticleListColumn);
+            }
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var tabcontrol = sender as TabControl;
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            switch (tabcontrol.SelectedIndex)
+            {
+                case 0:
+                    //Invoice
+                    ArticleColumnPresenter.SetBinding(ItemsControl.ItemsSourceProperty, "SettingsController.ArticleListColumns");
+                    //ArticleColumnPresenter.ItemsSource = viewModel.SettingsController.ArticleListColumns;
+                    break;
+                case 1:
+                    //Offer
+                    ArticleColumnPresenter.SetBinding(ItemsControl.ItemsSourceProperty, "SettingsController.ArticleListColumnsOffer");
+                    //ArticleColumnPresenter.ItemsSource = viewModel.SettingsController.ArticleListColumnsOffer;
+                    break;
+                case 2:
+                    //DeliveryNote
+                    ArticleColumnPresenter.SetBinding(ItemsControl.ItemsSourceProperty, "SettingsController.ArticleListColumnsDeliveryNote");
+                    //ArticleColumnPresenter.ItemsSource = viewModel.SettingsController.ArticleListColumnsDeliveryNote;
+                    break;
+                default:
+                    tabcontrol.SelectedIndex = 0;
+                    break;
+            }
         }
         #endregion
 
@@ -136,8 +175,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.FooterColumns.IndexOf(viewModel.SelectedFooterColumn);
-            viewModel.SettingsController.FooterColumns.RemoveAt(index);
-            viewModel.SettingsController.FooterColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedFooterColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.FooterColumns.RemoveAt(index);
+                viewModel.SettingsController.FooterColumns.Insert(Math.Max(index - 1, 0), viewModel.SelectedFooterColumn);
+            }
         }
 
         private void ButtonMoveFooterColumnDown(object sender, RoutedEventArgs e)
@@ -145,8 +187,11 @@ namespace OrderTypes_Biller.Export.Settings
             var viewModel = (DataContext as Export.Settings.ViewModel);
             this.Focus();
             var index = viewModel.SettingsController.FooterColumns.IndexOf(viewModel.SelectedFooterColumn);
-            viewModel.SettingsController.FooterColumns.RemoveAt(index);
-            viewModel.SettingsController.FooterColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.FooterColumns.Count), viewModel.SelectedFooterColumn);
+            if (index >= 0)
+            {
+                viewModel.SettingsController.FooterColumns.RemoveAt(index);
+                viewModel.SettingsController.FooterColumns.Insert(Math.Min(index + 1, viewModel.SettingsController.FooterColumns.Count), viewModel.SelectedFooterColumn);
+            }
         }
 
         private void ButtonAddFooterColumn(object sender, RoutedEventArgs e)
@@ -170,6 +215,46 @@ namespace OrderTypes_Biller.Export.Settings
             openFileDialog.Multiselect = false;
             if (openFileDialog.ShowDialog() == true)
                 (sender as TextBox).Text = openFileDialog.FileName;
+        }
+
+        private void ComboBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            var cb = sender as ComboBox;
+            if (cb.SelectedIndex == -1)
+            {
+                var val = cmConverter.cmUnit.StringToValue(cb.Text);
+                cb.Text = cmConverter.cmUnit.ValueToString(val);
+                viewModel.SettingsController.ImagePositionLeft = val;
+            }
+        }
+
+        private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (DataContext == null)
+                return;
+            var viewModel = (DataContext as Export.Settings.ViewModel);
+            viewModel.PropertyChanged += viewModel_PropertyChanged;
+            viewModel.SettingsController.PropertyChanged += SettingsController_PropertyChanged;
+        }
+
+        void viewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "SettingsController")
+                (DataContext as Export.Settings.ViewModel).SettingsController.PropertyChanged += SettingsController_PropertyChanged;
+        }
+
+        void SettingsController_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "ImagePositionLeftIndex")
+                if ((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeftIndex == -1)
+                    ComboBoxImagePositionLeft.Text = cmConverter.cmUnit.ValueToString((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeft);
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            if ((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeftIndex == -1)
+                ComboBoxImagePositionLeft.Text = cmConverter.cmUnit.ValueToString((DataContext as Export.Settings.ViewModel).SettingsController.ImagePositionLeft);
         }
     }
 }

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Biller.Core;
 
-namespace OrderTypes_Biller.Invoice
+namespace OrderTypes_Biller.Offer
 {
-    public class InvoiceParser : Biller.Core.Interfaces.DocumentParser
+    public class OfferParser : Biller.Core.Interfaces.DocumentParser
     {
         /// <summary>
         /// Parses <see cref="Customer"/> and <see cref="OrderedArticles"/>.
@@ -19,14 +19,14 @@ namespace OrderTypes_Biller.Invoice
         /// <returns></returns>
         public bool ParseAdditionalData(ref Biller.Core.Document.Document document, XElement data, Biller.Core.Interfaces.IDatabase database)
         {
-            if (document is Invoice)
+            if (document is Offer)
             {
                 var result = database.GetCustomer(data.Element("CustomerID").Value);
                 var customer = result.Result;
-                (document as Invoice).Customer = customer;
+                (document as Offer).Customer = customer;
 
                 var articles = data.Element("OrderedArticles").Elements();
-                (document as Invoice).OrderedArticles.Clear();
+                (document as Offer).OrderedArticles.Clear();
                 foreach (XElement article in articles)
                 {
                     var temp = new Biller.Core.Articles.OrderedArticle();
@@ -38,27 +38,27 @@ namespace OrderTypes_Biller.Invoice
                     temp.TaxClass = taskTaxClass.Result.Where(x => x.Name == article.Element("TaxClass").Value).Single();
 
                     temp.ParseFromXElement(article);
-                    (document as Invoice).OrderedArticles.Add(temp);
+                    (document as Offer).OrderedArticles.Add(temp);
                 }
 
                 try
                 {
-                    (document as Invoice).PaymentMethode.ParseFromXElement(data.Element((document as Invoice).PaymentMethode.XElementName));
-                    (document as Invoice).OrderShipment.ParseFromXElement(data.Element((document as Invoice).OrderShipment.XElementName));
+                    (document as Offer).PaymentMethode.ParseFromXElement(data.Element((document as Offer).PaymentMethode.XElementName));
+                    (document as Offer).OrderShipment.ParseFromXElement(data.Element((document as Offer).OrderShipment.XElementName));
                 } catch { }
                 try
                 {
-                    (document as Invoice).SmallBusiness = Boolean.Parse(data.Element("SmallBusiness").Value);
-                    if ((document as Invoice).SmallBusiness)
-                        (document as Invoice).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order, true);
-                    else if (!((document as Invoice).OrderCalculation is Calculations.DefaultOrderCalculation))
-                        (document as Invoice).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order, true);
+                    (document as Offer).SmallBusiness = Boolean.Parse(data.Element("SmallBusiness").Value);
+                    if ((document as Offer).SmallBusiness)
+                        (document as Offer).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order, true);
+                    else if (!((document as Offer).OrderCalculation is Calculations.DefaultOrderCalculation))
+                        (document as Offer).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order, true);
                 } catch { }
                 try
                 {
                     if (data.Element("EAddress") != null)
                     {
-                        (document as Invoice).DeliveryAddress.ParseFromXElement(data.Element("EAddress"));
+                        (document as Offer).DeliveryAddress.ParseFromXElement(data.Element("EAddress"));
                     }       
                 } catch {}
             }
@@ -84,7 +84,7 @@ namespace OrderTypes_Biller.Invoice
         {
             get
             {
-                var invoice = new Invoice();
+                var invoice = new Offer();
                 return invoice.LocalizedDocumentType;
             }
         }

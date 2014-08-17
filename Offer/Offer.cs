@@ -6,15 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace OrderTypes_Biller.Invoice
+namespace OrderTypes_Biller.Offer
 {
     /// <summary>
     /// Explicit implementation of <see cref="Order"/>.\n
     /// This class implements invoices.
     /// </summary>
-    public class Invoice : Order.Order
+    public class Offer : Order.Order
     {
-        public Invoice()
+        public Offer()
             : base()
         {
             DeliveryAddress = new Biller.Core.Utils.EAddress();
@@ -22,7 +22,7 @@ namespace OrderTypes_Biller.Invoice
 
         public override string DocumentType
         {
-            get { return "Invoice"; }
+            get { return "Offer"; }
         }
 
         public override string LocalizedDocumentType
@@ -32,8 +32,7 @@ namespace OrderTypes_Biller.Invoice
                 switch (CultureInfo.CurrentCulture.TwoLetterISOLanguageName)
                 {
                     case "de":
-                        return "Rechnung";
-
+                        return "Angebot";
                     default:
                         return base.LocalizedDocumentType;
                 }
@@ -79,7 +78,7 @@ namespace OrderTypes_Biller.Invoice
 
         public override Biller.Core.Interfaces.IXMLStorageable GetNewInstance()
         {
-            return new Invoice();
+            return new Offer();
         }
 
         public override string IDFieldName

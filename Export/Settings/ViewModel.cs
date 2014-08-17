@@ -18,7 +18,7 @@ namespace OrderTypes_Biller.Export.Settings
         "{DocumentOpeningText}", "{DocumentClosingText}"});
 
         static List<string> allowedArticleDataFields = new List<string>(new[] { "{Position}", "{Amount}", "{ArticleID}", "{ArticleText}", "{ArticleName}", "{ArticleNameWithText}",
-        "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}"});
+        "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}", "{OrderedWeight}"});
 
         string DataLocation = (Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), "") + "Data\\";
 
@@ -55,11 +55,8 @@ namespace OrderTypes_Biller.Export.Settings
         public async Task LoadData()
         {
             await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
-            mainWindowViewModel.DocumentTabViewModel.AddDocumentFactory(new Docket.DocketFactory());
-
             await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
-            mainWindowViewModel.DocumentTabViewModel.AddDocumentFactory(new Invoice.InvoiceFactory());
-
+            await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Offer.OfferParser());
             await mainWindowViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
 
             var savedItem = (await mainWindowViewModel.Database.AllStorageableItems(new Export.Settings.SettingsController())).FirstOrDefault();

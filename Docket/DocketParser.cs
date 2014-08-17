@@ -49,6 +49,15 @@ namespace OrderTypes_Biller.Docket
                 }
                 catch (Exception e)
                 { }
+                try
+                {
+                    (document as Docket).SmallBusiness = Boolean.Parse(data.Element("SmallBusiness").Value);
+                    if ((document as Docket).SmallBusiness)
+                        (document as Docket).OrderCalculation = new Calculations.SmallBusinessCalculation(document as Order.Order, true);
+                    else if (!((document as Docket).OrderCalculation is Calculations.DefaultOrderCalculation))
+                        (document as Docket).OrderCalculation = new Calculations.DefaultOrderCalculation(document as Order.Order, true);
+                }
+                catch { }
 
                 var money = new Money(0);
             }

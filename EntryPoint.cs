@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,34 +25,25 @@ namespace OrderTypes_Biller
 
         public string Description
         {
-            get { return "Implements different order types to save and load from database"; }
+            get { return "Stellt die Auftragsdokumente Rechnung, Lieferschein und Angebot bereit"; }
         }
 
         public double Version
         {
-            get { return 0.1; }
+            get { return 1.20140817; }
         }
 
         public void Activate()
         {
-            //await Task.Run(() =>
-            //{
-            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
-            //    ParentViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
-            //    ParentViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
-            //});
-            
-
             var vm = new Export.Settings.ViewModel(this);
-            //vm.LoadData();
-
             internalViewModels.Add(vm);
 
+            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Invoice.InvoiceFactory());
+            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Docket.DocketFactory());
+            ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Offer.OfferFactory());
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
-
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
-
-            
+            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = Name, Description = Description, GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140817, UpdateSource = "https://raw.githubusercontent.com/LastElb/BillerV2/master/update.json" });
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()

@@ -20,11 +20,19 @@ namespace OrderTypes_Biller.Order
         {
             // insert empty values to avoid null exceptions.
             OrderedArticles = new ObservableCollection<Biller.Core.Articles.OrderedArticle>();
-            DocumentID = ""; OrderOpeningText = ""; OrderClosingText = ""; Customer = new Biller.Core.Customers.Customer(); Date = DateTime.Now;
+            DocumentID = ""; OrderOpeningText = ""; OrderClosingText = ""; Customer = new Biller.Core.Customers.Customer();
+            Date = DateTime.Now; DateOfDelivery = DateTime.Now;
             OrderRebate = new Biller.Core.Utils.Percentage();
             OrderShipment = new Biller.Core.Utils.Shipment();
             PaymentMethode = new Biller.Core.Utils.PaymentMethode();
-            OrderCalculation = new DefaultOrderCalculation(this);
+            dynamic sb = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+            if (sb.IsSmallBusiness == null)
+                sb.IsSmallBusiness = false;
+            SmallBusiness = sb.IsSmallBusiness;
+            if (SmallBusiness)
+                OrderCalculation = new SmallBusinessCalculation(this);
+            else
+                OrderCalculation = new DefaultOrderCalculation(this);
         }
 
         /// <summary>
@@ -87,6 +95,12 @@ namespace OrderTypes_Biller.Order
         public virtual DateTime DateOfDelivery
         {
             get { return GetValue(() => DateOfDelivery); }
+            set { SetValue(value); }
+        }
+
+        public virtual bool SmallBusiness
+        {
+            get { return GetValue(() => SmallBusiness); }
             set { SetValue(value); }
         }
 
