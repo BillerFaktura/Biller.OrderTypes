@@ -53,17 +53,24 @@ namespace OrderTypes_Biller.Export
             // Each MigraDoc document needs at least one section.
             Section section = document.AddSection();
             section.PageSetup = pageSetup;
+            try
+            {
+                CreateHeader(section, companySettings, order);
+                CreateFooter(section, companySettings);
+                CreatePreListContent(section, order);
 
-            CreateHeader(section, companySettings, order);
-            CreateFooter(section, companySettings);
-            CreatePreListContent(section, order);
+                if (order is Docket.Docket)
+                    CreateArticleListForDocket(section, order);
+                else
+                    CreateArticleListForInvoice(section, order);
 
-            if (order is Docket.Docket)
-                CreateArticleListForDocket(section, order);
-            else
-                CreateArticleListForInvoice(section, order);
-            
-            CreatePostListContent(section, order);
+                CreatePostListContent(section, order);
+            }
+            catch(Exception e)
+            {
+                Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Fehler beim Erstellen des Dokuments", "Beim Erstellen des Dokuments ist ein unerwarterter Fehler aufgetreten. Informationen wurden in die Logdatei geschrieben.");
+                logger.Error(e);
+            }
 
             return document;
         }
@@ -275,7 +282,7 @@ namespace OrderTypes_Biller.Export
 
             if (ParentViewModel.SettingsController.ArticleListColumns.Count < 2)
             {
-                //ToDo: Show a notification
+                Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Zu wenig Artikelspalten", "Es werden mindestens zwei Artikelspalten benötigt!");
                 return;
             }
             var row = table.AddRow();
@@ -462,7 +469,7 @@ namespace OrderTypes_Biller.Export
 
             if (ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote.Count < 2)
             {
-                //ToDo: Show a notification
+                Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().NotificationManager.ShowNotification("Zu wenig Artikelspalten", "Es werden mindestens zwei Artikelspalten benötigt!");
                 return;
             }
             var row = table.AddRow();
