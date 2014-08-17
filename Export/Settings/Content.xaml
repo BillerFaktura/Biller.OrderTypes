@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:controls="clr-namespace:Biller.Controls;assembly=Biller.Controls"
              xmlns:converter="clr-namespace:Biller.Core.Converters;assembly=Biller.Core"
+             xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700" Margin="12" DataContextChanged="UserControl_DataContextChanged" Loaded="UserControl_Loaded">
     <UserControl.Resources>
@@ -53,7 +54,7 @@
             <Grid Name="GridSpan6Margin" Grid.ColumnSpan="6" Margin="0,0,1,0"/>
             <Grid Name="GridSpan7Margin" Grid.ColumnSpan="7" Margin="0,0,1,0"/>
         </Grid>
-        
+
         <!--controls:AnimatedScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel>
                 <Button Content="Add Text" Click="Button_Click"/>
@@ -155,7 +156,21 @@
                     <ColumnDefinition Width="*" MaxWidth="100"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Margin="0,5,0,0">
-                    <ItemsControl ItemsSource="{Binding SettingsController.ArticleListColumns}">
+                    <TabControl SelectionChanged="TabControl_SelectionChanged">
+                        <TabControl.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                                    <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseLight.xaml" />
+                                </ResourceDictionary.MergedDictionaries>
+                            </ResourceDictionary>
+                        </TabControl.Resources>
+                        <TabItem Header="Rechnung" metro:ControlsHelper.HeaderFontSize="16" />
+                        <TabItem Header="Angebot" metro:ControlsHelper.HeaderFontSize="16" />
+                        <TabItem Header="Lieferschein" metro:ControlsHelper.HeaderFontSize="16" />
+                    </TabControl>
+                    <ItemsControl ItemsSource="{Binding SettingsController.ArticleListColumns}" Name="ArticleColumnPresenter">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" GotFocus="StackPanel_GotFocus" LostFocus="StackPanel_LostFocus">

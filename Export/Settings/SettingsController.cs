@@ -25,6 +25,8 @@ namespace OrderTypes_Biller.Export.Settings
             AddressFrameShowSender = true;
             
             ArticleListColumns = new ObservableCollection<Models.ArticleListColumnModel>();
+            ArticleListColumnsDeliveryNote = new ObservableCollection<Models.ArticleListColumnModel>();
+            ArticleListColumnsOffer = new ObservableCollection<Models.ArticleListColumnModel>();
             FooterColumns = new ObservableCollection<Models.FooterColumnModel>();
         }
 
@@ -40,6 +42,10 @@ namespace OrderTypes_Biller.Export.Settings
 
         #region ArticleList
         public ObservableCollection<Models.ArticleListColumnModel> ArticleListColumns { get { return GetValue(() => ArticleListColumns); } set { SetValue(value); } }
+
+        public ObservableCollection<Models.ArticleListColumnModel> ArticleListColumnsOffer { get { return GetValue(() => ArticleListColumnsOffer); } set { SetValue(value); } }
+
+        public ObservableCollection<Models.ArticleListColumnModel> ArticleListColumnsDeliveryNote { get { return GetValue(() => ArticleListColumnsDeliveryNote); } set { SetValue(value); } }
         #endregion
 
         #region Footer
@@ -119,10 +125,10 @@ namespace OrderTypes_Biller.Export.Settings
             }
             if (settings.FooterColumns != null)
                 FooterColumns = settings.FooterColumns;
-            else
-            {
-
-            }
+            if (settings.ArticleListColumnsOffer != null)
+                ArticleListColumnsOffer = settings.ArticleListColumnsOffer;
+            if (settings.ArticleListColumnsDeliveryNote != null)
+                ArticleListColumnsDeliveryNote = settings.ArticleListColumnsDeliveryNote;
         }
 
         [JsonIgnore]
