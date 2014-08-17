@@ -25,12 +25,12 @@ namespace OrderTypes_Biller
 
         public string Description
         {
-            get { return "Implements different order types to save and load from database"; }
+            get { return "Stellt die Auftragsdokumente Rechnung, Lieferschein und Angebot bereit"; }
         }
 
         public double Version
         {
-            get { return 0.1; }
+            get { return 1.20140817; }
         }
 
         public void Activate()
@@ -43,7 +43,7 @@ namespace OrderTypes_Biller
             ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Offer.OfferFactory());
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
-            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = "Auftragsdokumente", Description = "Stellt die Auftragsdokumente Rechnung, Lieferschein und Angebot bereit", GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140813, UpdateSource = "https://raw.githubusercontent.com/LastElb/BillerV2/master/update.json" });
+            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = Name, Description = Description, GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140817, UpdateSource = "https://raw.githubusercontent.com/LastElb/BillerV2/master/update.json" });
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()
