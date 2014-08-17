@@ -56,6 +56,7 @@ namespace OrderTypes_Biller.Export.Settings
         {
             await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Docket.DocketParser());
             await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Invoice.InvoiceParser());
+            await mainWindowViewModel.Database.AddAdditionalPreviewDocumentParser(new Offer.OfferParser());
             await mainWindowViewModel.Database.RegisterStorageableItem(new Export.Settings.SettingsController());
 
             var savedItem = (await mainWindowViewModel.Database.AllStorageableItems(new Export.Settings.SettingsController())).FirstOrDefault();
