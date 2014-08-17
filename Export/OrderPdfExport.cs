@@ -57,7 +57,10 @@ namespace OrderTypes_Biller.Export
             CreateHeader(section, companySettings, order);
             CreateFooter(section, companySettings);
             CreatePreListContent(section, order);
-            if (order is Invoice.Invoice)
+
+            if (order is Docket.Docket)
+                CreateArticleListForDocket(section, order);
+            else
                 CreateArticleListForInvoice(section, order);
             
             CreatePostListContent(section, order);
@@ -270,7 +273,7 @@ namespace OrderTypes_Biller.Export
             }
 
 
-            if (ParentViewModel.SettingsController.ArticleListColumns.Count == 0)
+            if (ParentViewModel.SettingsController.ArticleListColumns.Count < 2)
             {
                 //ToDo: Show a notification
                 return;
@@ -457,8 +460,7 @@ namespace OrderTypes_Biller.Export
                 column.Format.Alignment = ArticleColumn.Alignment;
             }
 
-
-            if (ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote.Count == 0)
+            if (ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote.Count < 2)
             {
                 //ToDo: Show a notification
                 return;

@@ -18,7 +18,7 @@ namespace OrderTypes_Biller.Export.Settings
         "{DocumentOpeningText}", "{DocumentClosingText}"});
 
         static List<string> allowedArticleDataFields = new List<string>(new[] { "{Position}", "{Amount}", "{ArticleID}", "{ArticleText}", "{ArticleName}", "{ArticleNameWithText}",
-        "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}", "{OrderedWeight}");
+        "{SinglePriceGross}", "{SinglePriceNet}", "{TaxRate}", "{OrderedValueGross}", "{OrderedValueNet}", "{Rebate}", "{OrderedWeight}"});
 
         string DataLocation = (Assembly.GetExecutingAssembly().Location).Replace(System.IO.Path.GetFileName(Assembly.GetExecutingAssembly().Location), "") + "Data\\";
 
