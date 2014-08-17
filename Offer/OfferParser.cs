@@ -69,7 +69,7 @@ namespace OrderTypes_Biller.Offer
             return true;
         }
 
-        public string DocumentType { get { return "Invoice"; } }
+        public string DocumentType { get { return "Offer"; } }
 
         public bool ParseAdditionalPreviewData(ref dynamic document, XElement data)
         {
