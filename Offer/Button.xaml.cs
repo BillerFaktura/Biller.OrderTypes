@@ -18,7 +18,7 @@ namespace OrderTypes_Biller.Offer
     /// <summary>
     /// Interaktionslogik für Button.xaml
     /// </summary>
-    public partial class Button : UserControl
+    public partial class Button : Fluent.Button
     {
         public Button()
         {
