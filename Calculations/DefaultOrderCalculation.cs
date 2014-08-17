@@ -75,11 +75,12 @@ namespace OrderTypes_Biller.Calculations
         {
             TaxValues.Clear();
             ArticleSummary.Amount = 0;
+            OrderedWeight = 0;
             // iterate through each article and add its value
             foreach (var article in _parentOrder.OrderedArticles)
             {
                 ArticleSummary.Amount += article.RoundedGrossOrderValue.Amount;
-
+                OrderedWeight += article.ArticleWeight * article.OrderedAmount;
                 // taxclass listing
                 if (TaxValues.Any(x => x.TaxClass.Name == article.TaxClass.Name))
                     TaxValues.Single(x => x.TaxClass.Name == article.TaxClass.Name).Value += article.ExactVAT;
@@ -213,6 +214,8 @@ namespace OrderTypes_Biller.Calculations
         public EMoney NetOrderRebate { get { return GetValue(() => NetOrderRebate); } set { SetValue(value); } }
 
         public ObservableCollection<Biller.Core.Models.TaxClassMoneyModel> TaxValues { get { return GetValue(() => TaxValues); } set { SetValue(value); } }
+
+        public double OrderedWeight { get { return GetValue(() => OrderedWeight); } set { SetValue(value); } }
 
     }
 }

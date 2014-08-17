@@ -155,7 +155,7 @@
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="*" MaxWidth="100"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Margin="0,5,0,0">
+                <StackPanel>
                     <TabControl SelectionChanged="TabControl_SelectionChanged">
                         <TabControl.Resources>
                             <ResourceDictionary>
@@ -187,7 +187,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Margin="0,5,0,0">
+                <StackPanel Grid.Column="1">
                     <controls:Office2013Button Content="Nach oben" Click="Button_Click_4" FontSize="12"/>
                     <controls:Office2013Button Content="Nach unten" Click="Button_Click_3" FontSize="12"/>
 

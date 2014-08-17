@@ -20,6 +20,7 @@ namespace OrderTypes_Biller.Export
     public class OrderPdfExport : Biller.Core.Interfaces.IExport
     {
         private static Logger logger = LogManager.GetCurrentClassLogger();
+        Biller.Core.Utils.Unit kgUnit;
 
         Biller.UI.ViewModel.MainWindowViewModel MainWindowViewModel;
         Settings.ViewModel ParentViewModel;
@@ -29,6 +30,7 @@ namespace OrderTypes_Biller.Export
             this.MainWindowViewModel = MainWindowViewModel;
             PreviewElement = new MigraDoc.Rendering.Windows.DocumentPreview();
             PrintDialog = new System.Windows.Forms.PrintDialog();
+            kgUnit = new Biller.Core.Utils.Unit() { DecimalDigits = 3, DecimalSeperator = ",", Name = "Kilogramm", ShortName = "kg", ThousandSeperator = "" };
         }
 
         MigraDoc.Rendering.Windows.DocumentPreview PreviewElement;
@@ -55,7 +57,9 @@ namespace OrderTypes_Biller.Export
             CreateHeader(section, companySettings, order);
             CreateFooter(section, companySettings);
             CreatePreListContent(section, order);
-            CreateArticleList(section, order);
+            if (order is Invoice.Invoice)
+                CreateArticleListForInvoice(section, order);
+            
             CreatePostListContent(section, order);
 
             return document;
@@ -247,7 +251,7 @@ namespace OrderTypes_Biller.Export
             }
         }
 
-        private void CreateArticleList(Section section, Order.Order order)
+        private void CreateArticleListForInvoice(Section section, Order.Order order)
         {
             // Create the article table
             var table = section.AddTable();
@@ -319,6 +323,9 @@ namespace OrderTypes_Biller.Export
             var lastcolumn = ParentViewModel.SettingsController.ArticleListColumns.Count - 1;
 
             dynamic sb = Biller.UI.ViewModel.MainWindowViewModel.GetCurrentMainWindowViewModel().SettingsTabViewModel.KeyValueStore;
+            if (sb.IsSmallBusiness == null)
+                sb.IsSmallBusiness = false;
+
             if (sb.IsSmallBusiness)
             {
                 // Add the total price row
@@ -427,6 +434,81 @@ namespace OrderTypes_Biller.Export
             row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
             row.Cells[0].MergeRight = lastcolumn - 1;
             row.Cells[lastcolumn].AddParagraph(order.OrderCalculation.OrderSummary.AmountString);
+            row.Cells[lastcolumn].Borders.Bottom = BlackThickBorder.Clone();
+            row.Format.SpaceBefore = "0,25cm";
+            row.Format.SpaceAfter = "0,05cm";
+        }
+
+        private void CreateArticleListForDocket(Section section, Order.Order order)
+        {
+            // Create the article table
+            var table = section.AddTable();
+            table.Style = "Table";
+            table.Borders.Color = TableBorder;
+            table.Borders.Width = 0.25;
+            table.Borders.Left.Width = 0.5;
+            table.Borders.Right.Width = 0.5;
+            table.Rows.LeftIndent = 0;
+
+            // Article list columns
+            foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote)
+            {
+                var column = table.AddColumn(Unit.FromCentimeter(ArticleColumn.ColumnWidth));
+                column.Format.Alignment = ArticleColumn.Alignment;
+            }
+
+
+            if (ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote.Count == 0)
+            {
+                //ToDo: Show a notification
+                return;
+            }
+            var row = table.AddRow();
+            row.HeadingFormat = true;
+            row.Format.SpaceBefore = "0,1cm";
+            row.Format.SpaceAfter = "0,25cm";
+
+            var index = 0;
+            foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote)
+            {
+                row.Cells[index].AddParagraph(ArticleColumn.Header);
+                index += 1;
+            }
+
+            logger.Trace("FillContent - AddArticle " + order.DocumentType + ":" + order.DocumentID);
+
+            foreach (var article in order.OrderedArticles)
+            {
+                logger.Trace("AddArticle - " + article.ArticleID);
+
+                Row row1 = table.AddRow();
+                index = 0;
+                foreach (var ArticleColumn in ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote)
+                {
+                    row1.Cells[index].AddParagraph(ReplaceArticlePlaceHolder(ArticleColumn.Content, article));
+                    index += 1;
+                }
+
+                row1.Format.SpaceBefore = "0,1cm";
+                row1.Format.SpaceAfter = "0,4cm";
+            }
+
+            logger.Trace("Setting Borders");
+            Border BlackThickBorder = new Border();
+            BlackThickBorder.Visible = true;
+            BlackThickBorder.Color = Colors.Black;
+            BlackThickBorder.Width = 1.5;
+
+            var lastcolumn = ParentViewModel.SettingsController.ArticleListColumnsDeliveryNote.Count - 1;
+
+            logger.Trace("Adding total weight");
+            row = table.AddRow();
+            row.Cells[0].Borders.Bottom = BlackThickBorder.Clone();
+            row.Cells[0].AddParagraph("Gesamtgewicht");
+            row.Cells[0].Format.Font.Bold = true;
+            row.Cells[0].Format.Alignment = ParagraphAlignment.Right;
+            row.Cells[0].MergeRight = lastcolumn - 1;
+            row.Cells[lastcolumn].AddParagraph(kgUnit.ValueToString(order.OrderCalculation.OrderedWeight));
             row.Cells[lastcolumn].Borders.Bottom = BlackThickBorder.Clone();
             row.Format.SpaceBefore = "0,25cm";
             row.Format.SpaceAfter = "0,05cm";
@@ -541,6 +623,8 @@ namespace OrderTypes_Biller.Export
                 return article.RoundedNetOrderValue.ToString();
             if (placeholder == "{Rebate}")
                 return article.OrderRebate.PercentageString;
+            if (placeholder == "{OrderedWeight}")
+                return article.ArticleUnit.ValueToString(article.ArticleWeight * article.OrderedAmount);
             return placeholder;
         }
 
@@ -612,7 +696,6 @@ namespace OrderTypes_Biller.Export
             output.Add("Docket");
             return output;
         }
-
 
         public string Name
         {
