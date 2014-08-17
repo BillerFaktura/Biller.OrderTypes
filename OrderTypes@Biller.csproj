@@ -163,6 +163,12 @@
     <Compile Include="Invoice\InvoiceParser.cs" />
     <Compile Include="Models\ArticleListColumnModel.cs" />
     <Compile Include="Models\FooterColumnModel.cs" />
+    <Compile Include="Offer\Button.xaml.cs">
+      <DependentUpon>Button.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Offer\Offer.cs" />
+    <Compile Include="Offer\OfferFactory.cs" />
+    <Compile Include="Offer\OfferParser.cs" />
     <Compile Include="Order\Order.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -238,6 +244,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Invoice\Button.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Offer\Button.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
