@@ -43,7 +43,7 @@ namespace OrderTypes_Biller
             ParentViewModel.DocumentTabViewModel.AddDocumentFactory(new Offer.OfferFactory());
             ParentViewModel.SettingsTabViewModel.RegisteredExportClasses.Add(new Export.OrderPdfExport(ParentViewModel, vm));
             ParentViewModel.SettingsTabViewModel.SettingsList.Add(new Export.Settings.SettingsTab { DataContext =  vm});
-            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = Name, Description = Description, GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140826, UpdateSource = "https://raw.githubusercontent.com/LastElb/Biller.App/master/update.json" });
+            ParentViewModel.UpdateManager.Register(new Biller.Core.Models.AppModel() { Title = Name, Description = Description, GuID = ((GuidAttribute)Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(GuidAttribute), true)[0]).Value.ToLower(), Version = 1.20140828, UpdateSource = "https://raw.githubusercontent.com/LastElb/OrderTypes-Biller/master/update.json" });
         }
 
         public List<Biller.UI.Interface.IViewModel> ViewModels()

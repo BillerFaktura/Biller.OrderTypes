@@ -113,8 +113,7 @@ namespace OrderTypes_Biller.Calculations
             // Shipping
             if (!String.IsNullOrEmpty(_parentOrder.OrderShipment.Name))
             {
-                // Just for Germany
-                // We need to split the taxes with the ratio it is before
+                // Germany: Supplementary needs to have the tax, that is used most on the invoice
                 // Austria: Shipping has reduced taxes
                 // CH: 
                 OrderSummary.Amount += _parentOrder.OrderShipment.DefaultPrice.Amount;
@@ -130,24 +129,26 @@ namespace OrderTypes_Biller.Calculations
                         wholetax += item.Value.Amount;
 
                     List<Biller.Core.Models.TaxClassMoneyModel> temporaryTaxes = new List<Biller.Core.Models.TaxClassMoneyModel>();
+                    var highestTaxClass = TaxValues.FirstOrDefault();
                     foreach (var taxitem in TaxValues)
-                    {
-                        var ratio = 1 / (wholetax / taxitem.Value.Amount);
-                        var shipment = new OrderedArticle(new Article());
-                        shipment.TaxClass = taxitem.TaxClass;
-                        shipment.OrderedAmount = 1;
-                        shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
+                        if (taxitem.Value > highestTaxClass.Value)
+                            highestTaxClass = taxitem;
 
-                        var TaxSupplementaryWorkSeparate = keyValueStore.TaxSupplementaryWorkSeperate;
-                        if (TaxSupplementaryWorkSeparate == null)
-                            TaxSupplementaryWorkSeparate = false;
+                    var shipment = new OrderedArticle(new Article());
+                    shipment.TaxClass = highestTaxClass.TaxClass;
+                    shipment.OrderedAmount = 1;
+                    shipment.OrderPrice.Price1 = _parentOrder.OrderShipment.DefaultPrice;
 
-                        if (TaxSupplementaryWorkSeparate)
-                            temporaryTaxes.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(ratio * shipment.ExactVAT), TaxClass = taxitem.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
-                        else
-                            taxitem.Value += (ratio * shipment.ExactVAT);
-                        wholeShipmentTax += ratio * shipment.ExactVAT;
-                    }
+                    var TaxSupplementaryWorkSeparate = keyValueStore.TaxSupplementaryWorkSeperate;
+                    if (TaxSupplementaryWorkSeparate == null)
+                        TaxSupplementaryWorkSeparate = false;
+
+                    if (TaxSupplementaryWorkSeparate)
+                        temporaryTaxes.Add(new Biller.Core.Models.TaxClassMoneyModel() { Value = new Money(shipment.ExactVAT), TaxClass = highestTaxClass.TaxClass, TaxClassAddition = " auf Nebenleistungen" });
+                    else
+                        TaxValues.Where(x=>x.TaxClass.Equals(highestTaxClass.TaxClass)).First().Value += (shipment.ExactVAT);
+                    wholeShipmentTax +=  shipment.ExactVAT;
+
                     NetShipment.Amount = _parentOrder.OrderShipment.DefaultPrice.Amount - wholeShipmentTax;
                     NetOrderSummary.Amount += NetShipment.Amount;
 
