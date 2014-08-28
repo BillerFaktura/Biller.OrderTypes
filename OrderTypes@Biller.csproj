@@ -253,6 +253,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <None Include="update.json" />
     <Resource Include="Images\appbar.add.png" />
     <Content Include="Images\appbar.arrow.down.png" />
     <Content Include="Images\appbar.arrow.up.png" />
