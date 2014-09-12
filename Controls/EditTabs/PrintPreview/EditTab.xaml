@@ -17,9 +17,7 @@
     <TabItem.Header>
         <Grid>
             <Grid Width="48" Margin="10,0,0,0" HorizontalAlignment="Left">
-                <Viewbox Width="48" Height="48" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    
-                </Viewbox>
+                <Image Source="Images/appbar.printer.text.png"/>
             </Grid>
             <Grid Margin="68,0,0,0">
                 <StackPanel Orientation="Vertical" VerticalAlignment="Center" Margin="0,0,0,5" ClipToBounds="False">
